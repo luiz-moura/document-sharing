@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Persistence\Files;
+namespace App\Infrastructure\Persistence\InMemory;
 
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\DTOs\CreateFileData;

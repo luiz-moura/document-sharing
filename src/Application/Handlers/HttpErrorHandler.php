@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Handlers;
 
-use App\Application\Actions\ActionError;
-use App\Application\Actions\ActionPayload;
+use App\Application\Handlers\Actions\ActionError;
+use App\Application\Handlers\Actions\ActionPayload;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpException;
