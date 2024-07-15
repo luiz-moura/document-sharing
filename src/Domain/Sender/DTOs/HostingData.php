@@ -2,11 +2,10 @@
 
 namespace App\Domain\Sender\DTOs;
 
-class CreateFileData
+class HostingData
 {
     public function __construct(
+        private int $id,
         private string $name,
-        private float $size,
-        private string $mimeType,
     ) {}
 }

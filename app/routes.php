@@ -6,5 +6,5 @@ use App\Application\Controllers\UploadController;
 use Slim\App;
 
 return function (App $app) {
-
+    $app->post('/upload', UploadController::class . ':upload');
 };

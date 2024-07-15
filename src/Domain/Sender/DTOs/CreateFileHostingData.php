@@ -8,7 +8,7 @@ class CreateFileHostingData
 {
     public function __construct(
         private int $fileId,
-        private int $hostId,
+        private HostingData $hosting,
         private FileStatusEnum $status = FileStatusEnum::TO_SEND,
     ) {}
 }
