@@ -18,6 +18,11 @@ class UploadController
             upladedFile: $request->getUploadedFiles()['file'] ?? null
         );
 
+        UploadRequestData::from(
+            hostingIds: $request->getParsedBody()['hosting_ids'] ?? null,
+            upladedFile: $request->getUploadedFiles()['file'] ?? null
+        );
+
         ($this->uploadFileAction)($uploadRequest);
 
         return $response->withStatus(200);
