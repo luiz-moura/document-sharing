@@ -5,8 +5,8 @@ namespace App\Domain\Sender\DTOs;
 class CreateFileData
 {
     public function __construct(
-        private string $name,
-        private float $size,
-        private string $mimeType,
+        public string $name,
+        public float $size,
+        public string $mimeType,
     ) {}
 }
