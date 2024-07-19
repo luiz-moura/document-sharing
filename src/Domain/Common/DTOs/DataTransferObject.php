@@ -4,7 +4,7 @@ namespace App\Domain\Common\DTOs;
 use App\Domain\Common\Validators\Validator;
 
 
-class DataTransferObject
+abstract class DataTransferObject
 {
     public function __construct(...$args)
     {
