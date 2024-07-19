@@ -13,4 +13,9 @@ class InMemoryFileHostingRepository implements FileHostingRepository
     {
         return 1;
     }
+
+    public function updateAcessLink(int $fileHostingId, \App\Domain\Sender\DTOs\UpdateAcessLinkFileHostingData $fileHosting): void
+    {
+        sleep(3);
+    }
 }

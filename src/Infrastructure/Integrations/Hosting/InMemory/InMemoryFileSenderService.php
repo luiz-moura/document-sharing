@@ -2,11 +2,11 @@
 
 namespace App\Infrastructure\Integrations\Hosting\InMemory;
 
-use App\Domain\Sender\Contracts\SenderService;
+use App\Domain\Sender\Contracts\FileSenderService;
 use App\Domain\Sender\DTOs\HostedFileData;
 use Psr\Http\Message\UploadedFileInterface;
 
-class InMemoryHostingService implements SenderService
+class InMemoryFileSenderService implements FileSenderService
 {
     public function send(UploadedFileInterface $fileToUpload): HostedFileData
     {

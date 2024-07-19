@@ -12,7 +12,6 @@ use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\DTOs\UploadRequestData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
 use App\Domain\Sender\Exceptions\InvalidFileException;
-use App\Domain\Sender\Jobs\SendFileToHostingJob;
 use Psr\Http\Message\UploadedFileInterface;
 
 class UploadFileAction
@@ -21,7 +20,7 @@ class UploadFileAction
         private FileRepository $fileRepository,
         private FileHostingRepository $fileHostRepository,
         private HostingRepository $hostingRepository,
-        private SendFileToHostingJob $sendFileToHostingJob,
+        private SendFileToHostingAction $sendFileToHostingAction,
     ) {}
 
     public function __invoke(UploadRequestData $uploadRequest): void
@@ -39,14 +38,16 @@ class UploadFileAction
         );
 
         foreach ($hostings as $hosting) {
-            $this->fileHostRepository->create(
+            $fileHostingId = $this->fileHostRepository->create(
                 new CreateFileHostingData(
                     $fileId,
                     $hosting
                 )
             );
 
-            $this->sendFileToHostingJob->dispatch(
+            ($this->sendFileToHostingAction)(
+                $fileHostingId,
+                $hosting,
                 new SendFileToHostingData(
                     $uploadRequest->upladedFile,
                     $hosting

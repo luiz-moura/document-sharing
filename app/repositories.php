@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileRepository;
+use App\Domain\Sender\Contracts\FileSenderFactory;
 use App\Domain\Sender\Contracts\HostingRepository;
-use App\Domain\Sender\Contracts\SenderService;
-use App\Infrastructure\Integrations\Hosting\InMemory\InMemoryHostingService;
+use App\Infrastructure\Integrations\Hosting\FileSenderFactory as HostingFileSenderFactory;
 use App\Infrastructure\Persistence\InMemory\InMemoryFileHostingRepository;
 use App\Infrastructure\Persistence\InMemory\InMemoryFileRepository;
 use App\Infrastructure\Persistence\InMemory\InMemoryHostingRepository;
@@ -17,6 +17,6 @@ return function (ContainerBuilder $containerBuilder) {
         FileRepository::class => \DI\autowire(InMemoryFileRepository::class),
         FileHostingRepository::class => \DI\autowire(InMemoryFileHostingRepository::class),
         HostingRepository::class => \DI\autowire(InMemoryHostingRepository::class),
-        SenderService::class => \DI\autowire(InMemoryHostingService::class),
+        FileSenderFactory::class => \DI\autowire(HostingFileSenderFactory::class),
     ]);
 };
