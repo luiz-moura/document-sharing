@@ -25,6 +25,7 @@
         "php": "^8.3",
         "ext-json": "*",
         "bunny/bunny": "@dev",
+        "fig/http-message-util": "^1.1",
         "monolog/monolog": "^2.8",
         "php-di/php-di": "^6.4",
         "slim/psr7": "^1.5",
