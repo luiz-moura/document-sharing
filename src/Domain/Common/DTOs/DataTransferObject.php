@@ -3,13 +3,10 @@
 namespace App\Domain\Common\DTOs;
 use App\Domain\Common\Validators\Validator;
 
-
 abstract class DataTransferObject
 {
-    public function __construct(...$args)
+    public function __construct()
     {
-        self::__construct(...$args);
-
         $this->validate();
     }
 
