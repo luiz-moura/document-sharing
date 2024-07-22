@@ -5,108 +5,49 @@ declare(strict_types=1);
 namespace Tests\Application\Sender;
 
 use App\Application\Handlers\HttpErrorHandler;
+use App\Domain\Sender\Actions\SendFileToHostingAction;
 use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
-use App\Domain\Sender\DTOs\CreateFileData;
 use App\Domain\Sender\DTOs\CreateFileHostingData;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
-use App\Domain\Sender\Jobs\SendFileToHostingJob;
 use DI\Container;
+use Fig\Http\Message\StatusCodeInterface as StatusCode;
+use Faker\Generator;
 use Slim\App;
 use Slim\Middleware\ErrorMiddleware;
-use Slim\Psr7\UploadedFile;
+use Tests\Utils\Mocks\Sender\CreateFileDataFactory;
+use Tests\Utils\Mocks\Sender\UploadedFileFactory;
 use Tests\TestCase;
+use function Tests\Utils\Faker\faker;
 
 class UploadFileTest extends TestCase
 {
     private App $app;
     private Container $container;
+    private Generator $faker;
     private $fileRepositoryProphecy;
     private $fileHostingRepositoryProphecy;
     private $hostingRepositoryProphecy;
-    private $sendFileToHostingJob;
+    private $sendFileToHostingAction;
 
     protected function setup(): void
     {
         parent::setup();
 
         $this->app = $this->getAppInstance();
-
-        /** @var Container $container */
         $this->container = $this->app->getContainer();
+
+        $this->faker = faker();
 
         $this->fileRepositoryProphecy = $this->prophesize(FileRepository::class);
         $this->fileHostingRepositoryProphecy = $this->prophesize(FileHostingRepository::class);
         $this->hostingRepositoryProphecy = $this->prophesize(HostingRepository::class);
-        $this->sendFileToHostingJob = $this->prophesize(SendFileToHostingJob::class);
+        $this->sendFileToHostingAction = $this->prophesize(SendFileToHostingAction::class);
     }
 
-    public function testShouldUploadTheFileSuccessfully()
-    {
-        $fileId = 900;
-        $hostingIds = [100];
-        $googleDriveHosting = new HostingData($hostingIds[0], 'Google Drive');
-
-        $uploadedFile = new UploadedFile(
-            __DIR__ . '/example.png',
-            'example.png',
-            'image/png',
-            300
-        );
-
-        $this->hostingRepositoryProphecy
-            ->queryByIds($hostingIds)
-            ->willReturn([$googleDriveHosting])
-            ->shouldBeCalledOnce();
-
-        $this->fileRepositoryProphecy
-            ->create(
-                new CreateFileData(
-                    name: 'example.png',
-                    size: 300,
-                    mimeType: 'image/png'
-                )
-            )
-            ->willReturn($fileId)
-            ->shouldBeCalledOnce();
-
-        $this->fileHostingRepositoryProphecy
-            ->create(
-                new CreateFileHostingData(
-                    fileId: $fileId,
-                    hosting: $googleDriveHosting
-                ),
-            )
-            ->willReturn(100)
-            ->shouldBeCalledOnce();
-
-        $this->sendFileToHostingJob
-            ->dispatch(
-                new SendFileToHostingData(
-                    $uploadedFile,
-                    $googleDriveHosting
-                )
-            )
-            ->shouldBeCalledOnce();
-
-        $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
-        $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
-        $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
-        $this->container->set(SendFileToHostingJob::class, $this->sendFileToHostingJob->reveal());
-
-        $request = $this->createRequest('POST', '/upload')
-            ->withUploadedFiles(['file' => $uploadedFile])
-            ->withParsedBody(['hosting_ids' => $hostingIds]);
-
-        $response = $this->app->handle($request);
-
-        $this->assertEquals($response->getStatusCode(), 200);
-        $this->assertEquals((string) $response->getBody(), null);
-    }
-
-    public function testShouldFailWhenFileIsNotUploaded()
+    public function testShouldFailWhenFileIsNotSent()
     {
         $callableResolver = $this->app->getCallableResolver();
         $responseFactory = $this->app->getResponseFactory();
@@ -120,21 +61,21 @@ class UploadFileTest extends TestCase
         $this->hostingRepositoryProphecy->queryByIds()->shouldNotBeCalled();
         $this->fileRepositoryProphecy->create()->shouldNotBeCalled();
         $this->fileHostingRepositoryProphecy->create()->shouldNotBeCalled();
-        $this->sendFileToHostingJob->dispatch()->shouldNotBeCalled();
+        $this->sendFileToHostingAction->__invoke()->shouldNotBeCalled();
 
         $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
         $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
         $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
-        $this->container->set(SendFileToHostingJob::class, $this->sendFileToHostingJob->reveal());
+        $this->container->set(SendFileToHostingAction::class, $this->sendFileToHostingAction->reveal());
 
         $request = $this->createRequest('POST', '/upload')
-            ->withParsedBody(['hosting_ids' => [100]]);
+            ->withParsedBody(['hosting_ids' => [$this->faker->randomDigitNotZero()]]);
 
         $response = $this->app->handle($request);
 
         $responseBody = json_decode((string) $response->getBody());
 
-        $this->assertEquals($response->getStatusCode(), 500);
+        $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_INTERNAL_SERVER_ERROR);
         $this->assertEqualsIgnoringCase($responseBody->error->description, 'upladedFile cant be blank');
     }
 
@@ -149,14 +90,8 @@ class UploadFileTest extends TestCase
 
         $this->app->add($errorMiddleware);
 
-        $hostingIds = [100];
-        $uploadedFile = new UploadedFile(
-            __DIR__ . '/example.png',
-            'example.png',
-            'image/png',
-            300,
-            UPLOAD_ERR_NO_FILE
-        );
+        $hostingIds = [$this->faker->randomDigitNotZero()];
+        $uploadedFile = $uploadedFile = UploadedFileFactory::create(['error' => UPLOAD_ERR_NO_FILE]);
 
         $request = $this->createRequest('POST', '/upload')
             ->withUploadedFiles(['file' => $uploadedFile])
@@ -166,7 +101,7 @@ class UploadFileTest extends TestCase
 
         $responseBody = json_decode((string) $response->getBody());
 
-        $this->assertEquals($response->getStatusCode(), 500);
+        $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_INTERNAL_SERVER_ERROR);
         $this->assertEquals($responseBody->error->description, 'No file was uploaded');
     }
 
@@ -180,13 +115,8 @@ class UploadFileTest extends TestCase
         $errorMiddleware->setDefaultErrorHandler($errorHandler);
 
         $this->app->add($errorMiddleware);
-        $uploadedFile = new UploadedFile(
-            __DIR__ . '/example.png',
-            'example.png',
-            'image/png',
-            300,
-            UPLOAD_ERR_NO_FILE
-        );
+
+        $uploadedFile = UploadedFileFactory::create();
 
         $request = $this->createRequest('POST', '/upload')
             ->withUploadedFiles(['file' => $uploadedFile]);
@@ -195,7 +125,7 @@ class UploadFileTest extends TestCase
 
         $responseBody = json_decode((string) $response->getBody());
 
-        $this->assertEquals($response->getStatusCode(), 500);
+        $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_INTERNAL_SERVER_ERROR);
         $this->assertEquals($responseBody->error->description, 'hostingIds cant be blank');
     }
 
@@ -209,23 +139,73 @@ class UploadFileTest extends TestCase
         $errorMiddleware->setDefaultErrorHandler($errorHandler);
 
         $this->app->add($errorMiddleware);
-        $uploadedFile = new UploadedFile(
-            __DIR__ . '/example.png',
-            'example.png',
-            'image/png',
-            300,
-            UPLOAD_ERR_NO_FILE
-        );
+
+        $uploadedFile = UploadedFileFactory::create();
 
         $request = $this->createRequest('POST', '/upload')
             ->withUploadedFiles(['file' => $uploadedFile])
-            ->withParsedBody(['hosting_ids' => ['error']]);
+            ->withParsedBody(['hosting_ids' => ['INVALID_TYPE']]);
 
         $response = $this->app->handle($request);
 
         $responseBody = json_decode((string) $response->getBody());
 
-        $this->assertEquals($response->getStatusCode(), 500);
+        $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_INTERNAL_SERVER_ERROR);
         $this->assertEquals($responseBody->error->description, 'Only integer values are allowed in the hostingIds field.');
+    }
+
+    public function testShouldUploadTheFileSuccessfully()
+    {
+        $fileId = $this->faker->randomDigitNotZero();
+        $hostingIds = [$this->faker->randomDigitNotZero()];
+        $googleDriveHosting = new HostingData($hostingIds[0], 'Google Drive');
+        $fileHostingId = $this->faker->randomDigitNotZero();
+
+        $uploadedFile = UploadedFileFactory::create();
+        $createdFile = CreateFileDataFactory::fromUploadedFile($uploadedFile);
+
+        $this->hostingRepositoryProphecy
+            ->queryByIds($hostingIds)
+            ->willReturn([$googleDriveHosting])
+            ->shouldBeCalledOnce();
+
+        $this->fileRepositoryProphecy
+            ->create($createdFile)
+            ->willReturn($fileId)
+            ->shouldBeCalledOnce();
+
+        $this->fileHostingRepositoryProphecy
+            ->create(
+                new CreateFileHostingData(
+                    fileId: $fileId,
+                    hosting: $googleDriveHosting
+                ),
+            )
+            ->willReturn($fileHostingId)
+            ->shouldBeCalledOnce();
+
+        $this->sendFileToHostingAction
+            ->__invoke(
+                new SendFileToHostingData(
+                    $fileHostingId,
+                    $googleDriveHosting,
+                    $uploadedFile,
+                )
+            )
+            ->shouldBeCalledOnce();
+
+        $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
+        $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
+        $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
+        $this->container->set(SendFileToHostingAction::class, $this->sendFileToHostingAction->reveal());
+
+        $request = $this->createRequest('POST', '/upload')
+            ->withUploadedFiles(['file' => $uploadedFile])
+            ->withParsedBody(['hosting_ids' => $hostingIds]);
+
+        $response = $this->app->handle($request);
+
+        $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_OK);
+        $this->assertEmpty((string) $response->getBody());
     }
 }
