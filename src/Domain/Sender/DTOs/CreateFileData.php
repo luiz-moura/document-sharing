@@ -6,7 +6,7 @@ class CreateFileData
 {
     public function __construct(
         public string $name,
-        public float $size,
+        public int $size,
         public string $mimeType,
     ) {}
 }

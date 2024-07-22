@@ -46,11 +46,10 @@ class UploadFileAction
             );
 
             ($this->sendFileToHostingAction)(
-                $fileHostingId,
-                $hosting,
                 new SendFileToHostingData(
+                    $fileHostingId,
+                    $hosting,
                     $uploadRequest->upladedFile,
-                    $hosting
                 )
             );
         }

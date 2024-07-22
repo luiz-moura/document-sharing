@@ -4,9 +4,8 @@ namespace App\Domain\Sender\Actions;
 
 use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileSenderFactory;
-use App\Domain\Sender\DTOs\HostingData;
-use App\Domain\Sender\DTOs\UpdateAcessLinkFileHostingData;
-use Psr\Http\Message\UploadedFileInterface;
+use App\Domain\Sender\DTOs\SendFileToHostingData;
+use App\Domain\Sender\DTOs\UpdateAccessLinkFileHostingData;
 
 class SendFileToHostingAction
 {
@@ -15,18 +14,16 @@ class SendFileToHostingAction
         private FileHostingRepository $fileHostingRepository
     ) {}
 
-    public function __invoke(
-        int $fileHostingId,
-        HostingData $hosting,
-        UploadedFileInterface $uploadedFile
-    ): void {
-        $fileSenderService = $this->fileSenderFactory::create($hosting->name);
+    public function __invoke(SendFileToHostingData $sendFileToHosting): void {
+        $fileSenderService = $this->fileSenderFactory->create(
+            $sendFileToHosting->hosting->name
+        );
 
-        $hostedFile =  $fileSenderService->send($uploadedFile);
+        $hostedFile = $fileSenderService->send($sendFileToHosting->uploadedFile);
 
-        $this->fileHostingRepository->updateAcessLink(
-            $fileHostingId,
-            new UpdateAcessLinkFileHostingData(
+        $this->fileHostingRepository->updateAccessLink(
+            $sendFileToHosting->fileHostingId,
+            new UpdateAccessLinkFileHostingData(
                 externalFileId: $hostedFile->fileId,
                 webViewLink: $hostedFile->webViewLink,
                 webContentLink: $hostedFile->webContentLink,

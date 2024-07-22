@@ -4,5 +4,5 @@ namespace App\Domain\Sender\Contracts;
 
 interface FileSenderFactory
 {
-    public static function create(string $type): FileSenderService;
+    public function create(string $type): FileSenderService;
 }
