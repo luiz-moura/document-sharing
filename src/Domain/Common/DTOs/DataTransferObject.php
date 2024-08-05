@@ -1,6 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Common\DTOs;
+
 use App\Domain\Common\Validators\Validator;
 
 abstract class DataTransferObject

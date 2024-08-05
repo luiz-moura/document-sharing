@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Sender\Actions;
 
 use App\Domain\Sender\Contracts\FileHostingRepository;

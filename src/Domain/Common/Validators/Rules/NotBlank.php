@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Common\Validators\Rules;
 
 use App\Domain\Common\Validators\Contracts\Validation;

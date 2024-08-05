@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Integrations\Hosting\InMemory;
 
 use App\Domain\Sender\Contracts\FileSenderService;

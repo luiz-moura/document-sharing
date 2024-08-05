@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Infrastructure\Integrations\Hosting;
 
 use App\Domain\Sender\Contracts\FileSenderFactory as FileSenderFactoryContract;

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Sender\Jobs;
 
 use App\Domain\Common\Jobs\Contracts\Job;
