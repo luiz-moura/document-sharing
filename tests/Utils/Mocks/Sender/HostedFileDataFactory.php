@@ -22,7 +22,7 @@ class HostedFileDataFactory extends MockFactory
         $faker = faker();
 
         return [
-            'fileId' => $faker->randomDigitNotZero(),
+            'fileId' => $faker->shuffleString(),
             'fileName' => $faker->filePath(),
             'webViewLink' => $faker->url(),
             'webContentLink' => $faker->url(),
