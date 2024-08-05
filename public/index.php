@@ -9,13 +9,18 @@ use App\Application\Settings\SettingsInterface;
 use DI\ContainerBuilder;
 use Slim\Factory\AppFactory;
 use Slim\Factory\ServerRequestCreatorFactory;
+use Symfony\Component\Dotenv\Dotenv;
 
 require __DIR__ . '/../vendor/autoload.php';
 
 // Instantiate PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();
 
-if (false) { // Should be set to true in production
+// Dot env
+$dotenv = new Dotenv();
+$dotenv->load(__DIR__.'/../.env');
+
+if ($_ENV['APP_ENV']) {
 	$containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
 }
 
