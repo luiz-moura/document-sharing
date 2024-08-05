@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Sender\Actions;
 
 use App\Domain\Sender\Contracts\FileHostingRepository;
@@ -25,19 +27,19 @@ class UploadFileAction
 
     public function __invoke(UploadRequestData $uploadRequest): void
     {
-        $this->validateUploadedFile($uploadRequest->upladedFile);
+        $this->validateUploadedFile($uploadRequest->uploadedFile);
 
-        $hostings = $this->queryHostingByIds($uploadRequest->hostingIds);
+        $hosts = $this->queryHostingByIds($uploadRequest->hostingIds);
 
         $fileId = $this->fileRepository->create(
             new CreateFileData(
-                $uploadRequest->upladedFile->getClientFilename(),
-                $uploadRequest->upladedFile->getSize(),
-                $uploadRequest->upladedFile->getClientMediaType(),
+                $uploadRequest->uploadedFile->getClientFilename(),
+                $uploadRequest->uploadedFile->getSize(),
+                $uploadRequest->uploadedFile->getClientMediaType(),
             )
         );
 
-        foreach ($hostings as $hosting) {
+        foreach ($hosts as $hosting) {
             $fileHostingId = $this->fileHostRepository->create(
                 new CreateFileHostingData(
                     $fileId,
@@ -49,7 +51,7 @@ class UploadFileAction
                 new SendFileToHostingData(
                     $fileHostingId,
                     $hosting,
-                    $uploadRequest->upladedFile,
+                    $uploadRequest->uploadedFile,
                 )
             );
         }
@@ -72,12 +74,12 @@ class UploadFileAction
      */
     private function queryHostingByIds(array $hostingIds): array
     {
-        $hostings = $this->hostingRepository->queryByIds($hostingIds);
+        $hosts = $this->hostingRepository->queryByIds($hostingIds);
 
-        if (count($hostings) !== count($hostingIds)) {
+        if (count($hosts) !== count($hostingIds)) {
             throw new HostingNotFoundException();
         }
 
-        return $hostings;
+        return $hosts;
     }
 }

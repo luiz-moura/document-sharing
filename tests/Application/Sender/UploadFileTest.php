@@ -76,7 +76,7 @@ class UploadFileTest extends TestCase
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_INTERNAL_SERVER_ERROR);
-        $this->assertEqualsIgnoringCase($responseBody->error->description, 'upladedFile cant be blank');
+        $this->assertEqualsIgnoringCase($responseBody->error->description, 'uploadedFile cant be blank');
     }
 
     public function testShouldFailWhenTheFileIsInError()
@@ -105,7 +105,7 @@ class UploadFileTest extends TestCase
         $this->assertEquals($responseBody->error->description, 'No file was uploaded');
     }
 
-    public function testShouldFailWhenTheHostingsAreNotInformed()
+    public function testShouldFailWhenTheHostingAreNotInformed()
     {
         $callableResolver = $this->app->getCallableResolver();
         $responseFactory = $this->app->getResponseFactory();

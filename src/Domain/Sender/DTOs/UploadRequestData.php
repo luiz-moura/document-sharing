@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Domain\Sender\DTOs;
 
 use App\Domain\Common\DTOs\DataTransferObject;
@@ -17,7 +19,7 @@ class UploadRequestData extends DataTransferObject
         #[OnlyNumbers]
         public ?array $hostingIds,
         #[NotBlank]
-        public ?UploadedFileInterface $upladedFile,
+        public ?UploadedFileInterface $uploadedFile,
     ) {
         parent::__construct();
     }

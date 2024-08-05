@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Application\Controllers;
 
 use App\Domain\Sender\Actions\UploadFileAction;
@@ -15,7 +17,7 @@ class UploadController
     {
         $uploadRequest = new UploadRequestData(
             hostingIds: $request->getParsedBody()['hosting_ids'] ?? null,
-            upladedFile: $request->getUploadedFiles()['file'] ?? null
+            uploadedFile: $request->getUploadedFiles()['file'] ?? null
         );
 
         ($this->uploadFileAction)($uploadRequest);
