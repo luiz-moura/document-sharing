@@ -18,7 +18,8 @@
         "php-di/php-di": "^6.4",
         "slim/psr7": "^1.5",
         "slim/slim": "^4.10",
-        "spatie/dropbox-api": "^1.22"
+        "spatie/dropbox-api": "^1.22",
+        "symfony/dotenv": "^7.1"
     },
     "require-dev": {
         "jangregor/phpstan-prophecy": "^1.0.0",
