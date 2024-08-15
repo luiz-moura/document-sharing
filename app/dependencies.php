@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use App\Application\Settings\SettingsInterface;
 use DI\ContainerBuilder;
+use Doctrine\ORM\EntityManagerInterface;
 use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Monolog\Processor\UidProcessor;
@@ -25,6 +26,11 @@ return function (ContainerBuilder $containerBuilder) {
             $logger->pushHandler($handler);
 
             return $logger;
+        },
+        EntityManagerInterface::class => function () {
+            $em = require __DIR__ . '/../src/Infrastructure/Persistence/Doctrine/entity-manager.php';
+
+            return $em;
         },
     ]);
 };
