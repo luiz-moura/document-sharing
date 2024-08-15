@@ -8,12 +8,16 @@ use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileSenderFactory;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\DTOs\UpdateAccessLinkFileHostingData;
+use App\Domain\Sender\Exceptions\FailedToUploadFileToHostingException;
+use Psr\Log\LoggerInterface;
+use Throwable;
 
 class SendFileToHostingAction
 {
     public function __construct(
+        private FileHostingRepository $fileHostingRepository,
         private FileSenderFactory $fileSenderFactory,
-        private FileHostingRepository $fileHostingRepository
+        private LoggerInterface $logger,
     ) {}
 
     public function __invoke(SendFileToHostingData $sendFileToHosting): void {
@@ -21,7 +25,13 @@ class SendFileToHostingAction
             $sendFileToHosting->hosting->slug
         );
 
-        $hostedFile = $fileSenderService->send($sendFileToHosting->uploadedFile);
+        try {
+            $hostedFile = $fileSenderService->send($sendFileToHosting->uploadedFile);
+        } catch (Throwable $ex) {
+            $this->logsFileUploadError($ex, $sendFileToHosting);
+
+            throw new FailedToUploadFileToHostingException();
+        }
 
         $this->fileHostingRepository->updateAccessLink(
             $sendFileToHosting->fileHostingId,
@@ -30,6 +40,22 @@ class SendFileToHostingAction
                 webViewLink: $hostedFile->webViewLink,
                 webContentLink: $hostedFile->webContentLink,
             )
+        );
+    }
+
+    private function logsFileUploadError(Throwable $ex, SendFileToHostingData $sendFileToHosting) {
+        $this->logger->error(
+            sprintf('Failed to send file to service %s', $sendFileToHosting->hosting->slug),
+            context: [
+                'exception' => (string) $ex,
+                'hosting_id' => $sendFileToHosting->hosting->id,
+                'file_id' => $sendFileToHosting->fileHostingId,
+                'uploadedFile' => [
+                    'filename' => $sendFileToHosting->uploadedFile->getClientFilename(),
+                    'media_type' => $sendFileToHosting->uploadedFile->getClientMediaType(),
+                    'size' => $sendFileToHosting->uploadedFile->getSize(),
+                ],
+            ]
         );
     }
 }
