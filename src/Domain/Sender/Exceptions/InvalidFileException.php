@@ -6,6 +6,7 @@ namespace App\Domain\Sender\Exceptions;
 
 use Exception;
 use Throwable;
+use Fig\Http\Message\StatusCodeInterface as StatusCode;
 
 class InvalidFileException extends Exception implements Throwable
 {
@@ -23,7 +24,7 @@ class InvalidFileException extends Exception implements Throwable
 
         parent::__construct(
             $messages[$fileUploadErrorCode],
-            code: 400
+            code: StatusCode::STATUS_BAD_REQUEST
         );
     }
 }

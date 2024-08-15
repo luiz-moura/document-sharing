@@ -6,6 +6,7 @@ namespace App\Application\Handlers;
 
 use App\Application\Handlers\Actions\ActionError;
 use App\Application\Handlers\Actions\ActionPayload;
+use Fig\Http\Message\StatusCodeInterface as StatusCode;
 use Psr\Http\Message\ResponseInterface as Response;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpException;
@@ -25,7 +26,7 @@ class HttpErrorHandler extends SlimErrorHandler
     protected function respond(): Response
     {
         $exception = $this->exception;
-        $statusCode = 500;
+        $statusCode = StatusCode::STATUS_INTERNAL_SERVER_ERROR;
         $error = new ActionError(
             ActionError::SERVER_ERROR,
             'An internal error has occurred while processing your request.'

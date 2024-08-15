@@ -6,12 +6,15 @@ namespace App\Application\Controllers;
 
 use App\Domain\Sender\Actions\UploadFileAction;
 use App\Domain\Sender\DTOs\UploadRequestData;
+use Fig\Http\Message\StatusCodeInterface as StatusCode;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 
 class UploadController
 {
-    public function __construct(private UploadFileAction $uploadFileAction) {}
+    public function __construct(
+        private UploadFileAction $uploadFileAction,
+    ) {}
 
     public function upload(Request $request, Response $response): Response
     {
@@ -22,6 +25,6 @@ class UploadController
 
         ($this->uploadFileAction)($uploadRequest);
 
-        return $response->withStatus(200);
+        return $response->withStatus(StatusCode::STATUS_OK);
     }
 }

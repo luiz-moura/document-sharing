@@ -6,6 +6,7 @@ namespace App\Domain\Sender\Exceptions;
 
 use Exception;
 use Throwable;
+use Fig\Http\Message\StatusCodeInterface as StatusCode;
 
 class HostingNotFoundException extends Exception implements Throwable
 {
@@ -13,7 +14,7 @@ class HostingNotFoundException extends Exception implements Throwable
     {
         parent::__construct(
             'Hosting not found.',
-            code: 400
+            code: StatusCode::STATUS_BAD_REQUEST
         );
     }
 }

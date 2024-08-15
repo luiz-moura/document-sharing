@@ -12,9 +12,7 @@ use Psr\Http\Message\UploadedFileInterface;
 class UploadRequestData extends DataTransferObject
 {
     public function __construct(
-        /**
-         * @var int[] $hostingIds
-         */
+        /** @var int[] $hostingIds */
         #[NotBlank]
         #[OnlyNumbers]
         public ?array $hostingIds,

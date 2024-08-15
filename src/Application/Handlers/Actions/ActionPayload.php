@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Handlers\Actions;
 
+use Fig\Http\Message\StatusCodeInterface as StatusCode;
 use JsonSerializable;
 
 class ActionPayload implements JsonSerializable
@@ -18,7 +19,7 @@ class ActionPayload implements JsonSerializable
     private ?ActionError $error;
 
     public function __construct(
-        int $statusCode = 200,
+        int $statusCode = StatusCode::STATUS_OK,
         $data = null,
         ?ActionError $error = null
     ) {
