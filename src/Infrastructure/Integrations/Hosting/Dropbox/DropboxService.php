@@ -11,15 +11,16 @@ class DropboxService implements FileSenderService
 {
     private DropboxClient $client;
 
-    public function __construct() 
+    public function __construct()
     {
-        $this->client = new DropboxClient(config('dropbox.token'));
+        $dropboxToken = config('dropbox.token');
+        $this->client = new DropboxClient($dropboxToken);
     }
 
     public function send(UploadedFileInterface $fileToUpload): HostedFileData
     {
         $fileName = $this->generateFileName($fileToUpload->getClientFilename());
-        
+
         $uploadedFile = $this->client->upload(
             $fileName,
             file_get_contents($fileToUpload->getStream()->getMetadata('uri')),
