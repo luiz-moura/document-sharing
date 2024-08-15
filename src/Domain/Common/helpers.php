@@ -1,12 +1,12 @@
 <?php
 
-if (!function_exists('config')) {
+if (! function_exists('config')) {
     function config(string $key): mixed
     {
         $keys = explode('.', $key);
         $filename = array_shift($keys);
 
-        $config = require_once  __DIR__ . "/../../../app/{$filename}.php";
+        $config = require __DIR__ . "/../../../config/{$filename}.php";
 
         if (!$keys) {
             return $config;
