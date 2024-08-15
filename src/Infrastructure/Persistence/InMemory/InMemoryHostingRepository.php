@@ -11,11 +11,12 @@ class InMemoryHostingRepository implements HostingRepository
 {
     public function queryByIds(array $ids): array
     {
-        return [
-            new HostingData(
-                id: 1,
-                name: 'dropbox'
+        return array_map(
+            fn (int $id) => new HostingData(
+                id: $id,
+                name: 'in Memory',
+                slug: 'in-memory',
             )
-        ];
+        , $ids);
     }
 }

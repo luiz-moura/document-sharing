@@ -37,9 +37,13 @@ class UploadFileActionTest extends TestCase
 
         $this->faker = faker();
 
+        /** @var FileRepository */
         $this->fileRepository = $this->createMock(FileRepository::class);
+        /** @var FileHostingRepository */
         $this->fileHostingRepository = $this->createMock(FileHostingRepository::class);
+        /** @var HostingRepository */
         $this->hostingRepository = $this->createMock(HostingRepository::class);
+        /** @var SendFileToHostingAction */
         $this->sendFileToHostingAction = $this->createMock(SendFileToHostingAction::class);
 
         $this->sut = new UploadFileAction(
@@ -69,6 +73,7 @@ class UploadFileActionTest extends TestCase
     public function testShouldFailWhenOneOrMoreHostingIsNotFound()
     {
         $hostingIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];
+        /** @var UploadedFileInterface */
         $uploadedFile = $this->createMock(UploadedFileInterface::class);
 
         $this->hostingRepository
@@ -106,8 +111,8 @@ class UploadFileActionTest extends TestCase
         $createFile = CreateFileDataFactory::fromUploadedFile($uploadedFile);
 
         $hostingIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];
-        $googleDriveHosting = new HostingData($hostingIds[0], 'Google Drive');
-        $dropboxHosting = new HostingData($hostingIds[1], 'Dropbox');
+        $googleDriveHosting = new HostingData($hostingIds[0], 'Google Drive', 'google-drive');
+        $dropboxHosting = new HostingData($hostingIds[1], 'Dropbox', 'dropbox');
 
         $fileHostingIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];
 

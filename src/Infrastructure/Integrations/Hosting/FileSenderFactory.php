@@ -14,7 +14,7 @@ class FileSenderFactory implements FileSenderFactoryContract
 {
     public function create(string $type): FileSenderService {
         return match ($type) {
-            'inMemory' => new InMemoryFileSenderService(),
+            'in-memory' => new InMemoryFileSenderService(),
             'dropbox' => new DropboxService(),
             default => throw new Exception('Wrong file sender type passed.')
         };

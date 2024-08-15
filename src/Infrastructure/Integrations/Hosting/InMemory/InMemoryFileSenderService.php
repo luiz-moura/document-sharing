@@ -13,7 +13,7 @@ class InMemoryFileSenderService implements FileSenderService
     public function send(UploadedFileInterface $fileToUpload): HostedFileData
     {
         return new HostedFileData(
-            fileId: 1,
+            fileId: '312312da',
             fileName: 'inMemory.png',
             webViewLink: 'http://localhost:8080/inMemory.png',
             webContentLink: 'http://localhost:8080/inMemory.png'

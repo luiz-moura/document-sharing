@@ -26,7 +26,8 @@ class SendFileToHostingDataFactory extends MockFactory
             'fileHostingId' => $faker->randomDigitNotZero(),
             'hosting' => new HostingData(
                 id: $faker->randomDigitNotZero(),
-                name: $faker->monthName()
+                name: $faker->monthName(),
+                slug: $faker->slug(),
             ),
             'uploadedFile' => UploadedFileFactory::create(),
         ];

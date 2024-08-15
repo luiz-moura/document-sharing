@@ -18,7 +18,7 @@ class SendFileToHostingAction
 
     public function __invoke(SendFileToHostingData $sendFileToHosting): void {
         $fileSenderService = $this->fileSenderFactory->create(
-            $sendFileToHosting->hosting->name
+            $sendFileToHosting->hosting->slug
         );
 
         $hostedFile = $fileSenderService->send($sendFileToHosting->uploadedFile);
