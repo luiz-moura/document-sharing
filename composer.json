@@ -18,7 +18,7 @@
         "doctrine/orm": "^3.2",
         "fakerphp/faker": "^1.23",
         "fig/http-message-util": "^1.1",
-        "monolog/monolog": "^2.8",
+        "monolog/monolog": "^3.7",
         "php-di/php-di": "^6.4",
         "slim/psr7": "^1.5",
         "slim/slim": "^4.10",
