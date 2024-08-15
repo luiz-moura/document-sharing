@@ -13,6 +13,8 @@
         "ext-json": "*",
         "bunny/bunny": "@dev",
         "doctrine/dbal": "^4.0",
+        "doctrine/doctrine-migrations-bundle": "^3.3",
+        "doctrine/migrations": "^3.8",
         "doctrine/orm": "^3.2",
         "fakerphp/faker": "^1.23",
         "fig/http-message-util": "^1.1",
