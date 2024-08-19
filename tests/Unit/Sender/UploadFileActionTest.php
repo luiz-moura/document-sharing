@@ -56,7 +56,7 @@ class UploadFileActionTest extends TestCase
 
     public function testShouldFailWhenTheFileIsInError()
     {
-        $hostingIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];
+        $hostingSlug = [$this->faker->randomDigitNotZero(), $this->faker->slug(1)];
         $uploadedFile = UploadedFileFactory::create(['error' => UPLOAD_ERR_CANT_WRITE]);
 
         $this->expectException(InvalidFileException::class);
@@ -64,7 +64,7 @@ class UploadFileActionTest extends TestCase
 
         $this->sut->__invoke(
             new UploadRequestData(
-                $hostingIds,
+                $hostingSlug,
                 $uploadedFile
             )
         );
@@ -72,14 +72,14 @@ class UploadFileActionTest extends TestCase
 
     public function testShouldFailWhenOneOrMoreHostingIsNotFound()
     {
-        $hostingIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];
+        $hostingSlugs = [$this->faker->slug(1), $this->faker->slug(1)];
         /** @var UploadedFileInterface */
         $uploadedFile = $this->createMock(UploadedFileInterface::class);
 
         $this->hostingRepository
             ->expects($this->once())
-            ->method('queryByIds')
-            ->with($hostingIds)
+            ->method('queryBySlugs')
+            ->with($hostingSlugs)
             ->willReturn([]);
 
         $this->fileRepository
@@ -98,7 +98,7 @@ class UploadFileActionTest extends TestCase
 
         $this->sut->__invoke(
             new UploadRequestData(
-                $hostingIds,
+                $hostingSlugs,
                 $uploadedFile
             )
         );
@@ -110,16 +110,16 @@ class UploadFileActionTest extends TestCase
         $uploadedFile = UploadedFileFactory::create();
         $createFile = CreateFileDataFactory::fromUploadedFile($uploadedFile);
 
-        $hostingIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];
-        $googleDriveHosting = new HostingData($hostingIds[0], 'Google Drive', 'google-drive');
-        $dropboxHosting = new HostingData($hostingIds[1], 'Dropbox', 'dropbox');
+        $hostingSlugs = [$this->faker->slug(1), $this->faker->slug(1)];
+        $googleDriveHosting = new HostingData(1, 'Google Drive', 'google-drive');
+        $dropboxHosting = new HostingData(2, 'Dropbox', 'dropbox');
 
         $fileHostingIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];
 
         $this->hostingRepository
             ->expects($this->once())
-            ->method('queryByIds')
-            ->with($hostingIds)
+            ->method('queryBySlugs')
+            ->with($hostingSlugs)
             ->willReturn([$googleDriveHosting, $dropboxHosting]);
 
         $this->fileRepository
@@ -167,7 +167,7 @@ class UploadFileActionTest extends TestCase
 
         $this->sut->__invoke(
             new UploadRequestData(
-                $hostingIds,
+                $hostingSlugs,
                 $uploadedFile
             )
         );

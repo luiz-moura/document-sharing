@@ -10,6 +10,7 @@ use App\Domain\Sender\Contracts\FileSenderFactory;
 use App\Domain\Sender\Contracts\FileSenderService;
 use App\Domain\Sender\DTOs\UpdateAccessLinkFileHostingData;
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
 use Tests\Utils\Mocks\Sender\HostedFileDataFactory;
 use Tests\Utils\Mocks\Sender\SendFileToHostingDataFactory;
 
@@ -18,19 +19,25 @@ class SendFileToHostingActionTest extends TestCase
     private $fileSenderFactory;
     private $fileSenderService;
     private $fileHostingRepository;
+    private $logger;
     private SendFileToHostingAction $sut;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        /** @var FileSenderFactory */
         $this->fileSenderFactory = $this->createMock(FileSenderFactory::class);
         $this->fileSenderService = $this->createMock(FileSenderService::class);
+        /** @var FileHostingRepository */
         $this->fileHostingRepository = $this->createMock(FileHostingRepository::class);
+        /** @var LoggerInterface */
+        $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->sut = new SendFileToHostingAction(
-            $this->fileSenderFactory,
             $this->fileHostingRepository,
+            $this->fileSenderFactory,
+            $this->logger,
         );
     }
 
@@ -54,7 +61,7 @@ class SendFileToHostingActionTest extends TestCase
         $this->fileSenderFactory
             ->expects($this->once())
             ->method('create')
-            ->with($sendFileToHosting->hosting->name)
+            ->with($sendFileToHosting->hosting->slug)
             ->willReturn($this->fileSenderService);
 
         $this->fileHostingRepository

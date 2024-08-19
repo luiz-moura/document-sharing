@@ -19,7 +19,7 @@ class UploadController
     public function upload(Request $request, Response $response): Response
     {
         $uploadRequest = new UploadRequestData(
-            hostingIds: $request->getParsedBody()['hosting_ids'] ?? null,
+            hostingSlugs: $request->getParsedBody()['hosting_slugs'] ?? null,
             uploadedFile: $request->getUploadedFiles()['file'] ?? null
         );
 

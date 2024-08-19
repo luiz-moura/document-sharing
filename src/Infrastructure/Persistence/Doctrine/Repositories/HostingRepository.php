@@ -11,11 +11,11 @@ use Doctrine\ORM\EntityRepository;
 
 class HostingRepository extends EntityRepository implements HostingRepositoryContract
 {
-    public function queryByIds(array $hostingIds): array
+    public function queryBySlugs(array $hostingSlugs): array
     {
         $hosts = $this->createQueryBuilder('h')
-            ->where('h.id IN (:ids)')
-            ->setParameter('ids', $hostingIds)
+            ->where('h.slug IN (:slugs)')
+            ->setParameter('slugs', $hostingSlugs)
             ->getQuery()
             ->getResult();
 

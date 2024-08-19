@@ -58,7 +58,7 @@ class UploadFileTest extends TestCase
 
         $this->app->add($errorMiddleware);
 
-        $this->hostingRepositoryProphecy->queryByIds()->shouldNotBeCalled();
+        $this->hostingRepositoryProphecy->queryBySlugs()->shouldNotBeCalled();
         $this->fileRepositoryProphecy->create()->shouldNotBeCalled();
         $this->fileHostingRepositoryProphecy->create()->shouldNotBeCalled();
         $this->sendFileToHostingAction->__invoke()->shouldNotBeCalled();
@@ -69,7 +69,7 @@ class UploadFileTest extends TestCase
         $this->container->set(SendFileToHostingAction::class, $this->sendFileToHostingAction->reveal());
 
         $request = $this->createRequest('POST', '/upload')
-            ->withParsedBody(['hosting_ids' => [$this->faker->randomDigitNotZero()]]);
+            ->withParsedBody(['hosting_slugs' => [$this->faker->slug(1)]]);
 
         $response = $this->app->handle($request);
 
@@ -90,12 +90,12 @@ class UploadFileTest extends TestCase
 
         $this->app->add($errorMiddleware);
 
-        $hostingIds = [$this->faker->randomDigitNotZero()];
+        $hostingSlugs = [$this->faker->slug(1)];
         $uploadedFile = $uploadedFile = UploadedFileFactory::create(['error' => UPLOAD_ERR_NO_FILE]);
 
         $request = $this->createRequest('POST', '/upload')
             ->withUploadedFiles(['file' => $uploadedFile])
-            ->withParsedBody(['hosting_ids' => $hostingIds]);
+            ->withParsedBody(['hosting_slugs' => $hostingSlugs]);
 
         $response = $this->app->handle($request);
 
@@ -126,46 +126,21 @@ class UploadFileTest extends TestCase
         $responseBody = json_decode((string) $response->getBody());
 
         $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_INTERNAL_SERVER_ERROR);
-        $this->assertEquals($responseBody->error->description, 'hostingIds cant be blank');
-    }
-
-    public function testShouldFailWhenOneOrMoreHostingIsInvalid()
-    {
-        $callableResolver = $this->app->getCallableResolver();
-        $responseFactory = $this->app->getResponseFactory();
-
-        $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
-        $errorMiddleware = new ErrorMiddleware($callableResolver, $responseFactory, true, false, false);
-        $errorMiddleware->setDefaultErrorHandler($errorHandler);
-
-        $this->app->add($errorMiddleware);
-
-        $uploadedFile = UploadedFileFactory::create();
-
-        $request = $this->createRequest('POST', '/upload')
-            ->withUploadedFiles(['file' => $uploadedFile])
-            ->withParsedBody(['hosting_ids' => ['INVALID_TYPE']]);
-
-        $response = $this->app->handle($request);
-
-        $responseBody = json_decode((string) $response->getBody());
-
-        $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_INTERNAL_SERVER_ERROR);
-        $this->assertEquals($responseBody->error->description, 'Only integer values are allowed in the hostingIds field.');
+        $this->assertEquals($responseBody->error->description, 'hostingSlugs cant be blank');
     }
 
     public function testShouldUploadTheFileSuccessfully()
     {
         $fileId = $this->faker->randomDigitNotZero();
-        $hostingIds = [$this->faker->randomDigitNotZero()];
-        $googleDriveHosting = new HostingData($hostingIds[0], 'Google Drive', 'google-drive');
+        $hostingSlugs = [$this->faker->randomDigitNotZero()];
+        $googleDriveHosting = new HostingData($hostingSlugs[0], 'Google Drive', 'google-drive');
         $fileHostingId = $this->faker->randomDigitNotZero();
 
         $uploadedFile = UploadedFileFactory::create();
         $createdFile = CreateFileDataFactory::fromUploadedFile($uploadedFile);
 
         $this->hostingRepositoryProphecy
-            ->queryByIds($hostingIds)
+            ->queryBySlugs($hostingSlugs)
             ->willReturn([$googleDriveHosting])
             ->shouldBeCalledOnce();
 
@@ -201,7 +176,7 @@ class UploadFileTest extends TestCase
 
         $request = $this->createRequest('POST', '/upload')
             ->withUploadedFiles(['file' => $uploadedFile])
-            ->withParsedBody(['hosting_ids' => $hostingIds]);
+            ->withParsedBody(['hosting_slugs' => $hostingSlugs]);
 
         $response = $this->app->handle($request);
 

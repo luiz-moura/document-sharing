@@ -29,7 +29,7 @@ class UploadFileAction
     {
         $this->validateUploadedFile($uploadRequest->uploadedFile);
 
-        $hosts = $this->queryHostingByIds($uploadRequest->hostingIds);
+        $hosts = $this->queryHostingByIds($uploadRequest->hostingSlugs);
 
         $fileId = $this->fileRepository->create(
             new CreateFileData(
@@ -68,15 +68,15 @@ class UploadFileAction
     }
 
     /**
-     * @param int[] $hostingIds
+     * @param string[] $hostingSlugs
      * @return HostingData[]
      * @throws HostingNotFoundException
      */
-    private function queryHostingByIds(array $hostingIds): array
+    private function queryHostingByIds(array $hostingSlugs): array
     {
-        $hosts = $this->hostingRepository->queryByIds($hostingIds);
+        $hosts = $this->hostingRepository->queryBySlugs($hostingSlugs);
 
-        if (count($hosts) !== count($hostingIds)) {
+        if (count($hosts) !== count($hostingSlugs)) {
             throw new HostingNotFoundException();
         }
 

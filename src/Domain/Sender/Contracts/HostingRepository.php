@@ -9,8 +9,8 @@ use App\Domain\Sender\DTOs\HostingData;
 interface HostingRepository
 {
     /**
-     * @param int[] $hostingIds
+     * @param string[] $hostingSlugs
      * @return HostingData[]
      */
-    public function queryByIds(array $hostingIds): array;
+    public function queryBySlugs(array $hostingSlugs): array;
 }
