@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Application\Sender;
 
 use App\Application\Handlers\HttpErrorHandler;
+use App\Domain\Common\Uuid\Contracts\UuidGeneratorService;
 use App\Domain\Sender\Actions\SendFileToHostingAction;
 use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileRepository;
@@ -31,6 +32,7 @@ class UploadFileTest extends TestCase
     private $fileHostingRepositoryProphecy;
     private $hostingRepositoryProphecy;
     private $sendFileToHostingAction;
+    private $uuidGeneratorService;
 
     protected function setup(): void
     {
@@ -45,6 +47,7 @@ class UploadFileTest extends TestCase
         $this->fileHostingRepositoryProphecy = $this->prophesize(FileHostingRepository::class);
         $this->hostingRepositoryProphecy = $this->prophesize(HostingRepository::class);
         $this->sendFileToHostingAction = $this->prophesize(SendFileToHostingAction::class);
+        $this->uuidGeneratorService = $this->prophesize(UuidGeneratorService::class);
     }
 
     public function testShouldFailWhenFileIsNotSent()
@@ -62,11 +65,13 @@ class UploadFileTest extends TestCase
         $this->fileRepositoryProphecy->create()->shouldNotBeCalled();
         $this->fileHostingRepositoryProphecy->create()->shouldNotBeCalled();
         $this->sendFileToHostingAction->__invoke()->shouldNotBeCalled();
+        $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
 
         $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
         $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
         $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
         $this->container->set(SendFileToHostingAction::class, $this->sendFileToHostingAction->reveal());
+        $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
 
         $request = $this->createRequest('POST', '/upload')
             ->withParsedBody(['hosting_slugs' => [$this->faker->slug(1)]]);
@@ -77,6 +82,30 @@ class UploadFileTest extends TestCase
 
         $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_INTERNAL_SERVER_ERROR);
         $this->assertEqualsIgnoringCase($responseBody->error->description, 'uploadedFile cant be blank');
+    }
+
+    public function testShouldFailWhenTheHostingAreNotInformed()
+    {
+        $callableResolver = $this->app->getCallableResolver();
+        $responseFactory = $this->app->getResponseFactory();
+
+        $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
+        $errorMiddleware = new ErrorMiddleware($callableResolver, $responseFactory, true, false, false);
+        $errorMiddleware->setDefaultErrorHandler($errorHandler);
+
+        $this->app->add($errorMiddleware);
+
+        $uploadedFile = UploadedFileFactory::create();
+
+        $request = $this->createRequest('POST', '/upload')
+            ->withUploadedFiles(['file' => $uploadedFile]);
+
+        $response = $this->app->handle($request);
+
+        $responseBody = json_decode((string) $response->getBody());
+
+        $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_INTERNAL_SERVER_ERROR);
+        $this->assertEquals($responseBody->error->description, 'hostingSlugs cant be blank');
     }
 
     public function testShouldFailWhenTheFileIsInError()
@@ -105,30 +134,6 @@ class UploadFileTest extends TestCase
         $this->assertEquals($responseBody->error->description, 'No file was uploaded');
     }
 
-    public function testShouldFailWhenTheHostingAreNotInformed()
-    {
-        $callableResolver = $this->app->getCallableResolver();
-        $responseFactory = $this->app->getResponseFactory();
-
-        $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory);
-        $errorMiddleware = new ErrorMiddleware($callableResolver, $responseFactory, true, false, false);
-        $errorMiddleware->setDefaultErrorHandler($errorHandler);
-
-        $this->app->add($errorMiddleware);
-
-        $uploadedFile = UploadedFileFactory::create();
-
-        $request = $this->createRequest('POST', '/upload')
-            ->withUploadedFiles(['file' => $uploadedFile]);
-
-        $response = $this->app->handle($request);
-
-        $responseBody = json_decode((string) $response->getBody());
-
-        $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_INTERNAL_SERVER_ERROR);
-        $this->assertEquals($responseBody->error->description, 'hostingSlugs cant be blank');
-    }
-
     public function testShouldUploadTheFileSuccessfully()
     {
         $fileId = $this->faker->randomDigitNotZero();
@@ -142,6 +147,11 @@ class UploadFileTest extends TestCase
         $this->hostingRepositoryProphecy
             ->queryBySlugs($hostingSlugs)
             ->willReturn([$googleDriveHosting])
+            ->shouldBeCalledOnce();
+
+        $this->uuidGeneratorService
+            ->generateUuid()
+            ->willReturn($createdFile->uuid)
             ->shouldBeCalledOnce();
 
         $this->fileRepositoryProphecy
@@ -173,6 +183,7 @@ class UploadFileTest extends TestCase
         $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
         $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
         $this->container->set(SendFileToHostingAction::class, $this->sendFileToHostingAction->reveal());
+        $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
 
         $request = $this->createRequest('POST', '/upload')
             ->withUploadedFiles(['file' => $uploadedFile])

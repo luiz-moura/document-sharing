@@ -31,7 +31,10 @@ class CreateFileDataFactory extends MockFactory
 
     public static function fromUploadedFile(UploadedFileInterface $uploadedFile): CreateFileData
     {
+        $faker = faker();
+
         return new CreateFileData(
+            $faker->uuid(),
             $uploadedFile->getClientFilename(),
             $uploadedFile->getSize(),
             $uploadedFile->getClientMediaType()

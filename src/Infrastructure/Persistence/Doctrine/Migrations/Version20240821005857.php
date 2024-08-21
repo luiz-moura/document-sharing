@@ -10,20 +10,20 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20240819000713 extends AbstractMigration
+final class Version20240821005857 extends AbstractMigration
 {
     public function getDescription(): string
     {
-        return 'Insert dropbox record in hosting table';
+        return 'Add uuid column to files table';
     }
 
     public function up(Schema $schema): void
     {
-        $this->addSql("INSERT INTO hosting (name, slug) VALUES ('Dropbox', 'dropbox');");
+        $this->addSql('ALTER TABLE files ADD uuid UUID NOT NULL');
     }
 
     public function down(Schema $schema): void
     {
-        $this->addSql("DELETE FROM hosting WHERE slug = 'dropbox'");
+        $this->addSql('ALTER TABLE files DROP uuid');
     }
 }

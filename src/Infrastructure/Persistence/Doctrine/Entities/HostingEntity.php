@@ -28,6 +28,9 @@ class HostingEntity
     #[ORM\Column(
         name: 'created_at',
         type: 'datetimetz_immutable',
+        insertable: false,
+        updatable: false,
+        options: ['default' => 'CURRENT_TIMESTAMP'],
     )]
     private $createdAt;
 
@@ -37,7 +40,6 @@ class HostingEntity
     ) {
         $this->name = $name;
         $this->slug = $slug;
-        $this->createdAt = new DateTimeImmutable('now');
     }
 
     public function getId(): int

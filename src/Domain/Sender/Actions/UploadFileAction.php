@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sender\Actions;
 
+use App\Domain\Common\Uuid\Contracts\UuidGeneratorService;
 use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
@@ -23,16 +24,20 @@ class UploadFileAction
         private FileHostingRepository $fileHostRepository,
         private HostingRepository $hostingRepository,
         private SendFileToHostingAction $sendFileToHostingAction,
+        private UuidGeneratorService $uuidGeneratorService,
     ) {}
 
-    public function __invoke(UploadRequestData $uploadRequest): void
+    public function __invoke(UploadRequestData $uploadRequest): string
     {
         $this->validateUploadedFile($uploadRequest->uploadedFile);
 
         $hosts = $this->queryHostingByIds($uploadRequest->hostingSlugs);
 
+        $uuid = $this->uuidGeneratorService->generateUuid();
+
         $fileId = $this->fileRepository->create(
             new CreateFileData(
+                $uuid,
                 $uploadRequest->uploadedFile->getClientFilename(),
                 $uploadRequest->uploadedFile->getSize(),
                 $uploadRequest->uploadedFile->getClientMediaType(),
@@ -55,6 +60,8 @@ class UploadFileAction
                 )
             );
         }
+
+        return $uuid;
     }
 
     /**
