@@ -20,6 +20,7 @@
         "fig/http-message-util": "^1.1",
         "monolog/monolog": "^2.8",
         "php-di/php-di": "^6.4",
+        "ramsey/uuid": "^4.7",
         "slim/psr7": "^1.5",
         "slim/slim": "^4.10",
         "spatie/dropbox-api": "^1.22",

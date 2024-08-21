@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
+use App\Domain\Common\Uuid\Contracts\UuidGeneratorService as UuidGeneratorServiceContract;
 use App\Domain\Sender\Contracts\FileHostingRepository as FileHostingRepositoryContract;
 use App\Domain\Sender\Contracts\FileRepository as FileRepositoryContract;
 use App\Domain\Sender\Contracts\FileSenderFactory as FileSenderFactoryContract;
 use App\Domain\Sender\Contracts\HostingRepository as HostingRepositoryContract;
+use App\Infrastructure\Adapters\Uuid\UuidGeneratorService;
 use App\Infrastructure\Integrations\Hosting\FileSenderFactory as HostingFileSenderFactory;
 use App\Infrastructure\Persistence\Doctrine\Entities\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\Entities\HostedFileEntity;
@@ -29,5 +31,8 @@ return function (ContainerBuilder $containerBuilder) {
         FileHostingRepositoryContract::class => function (ContainerInterface $container) {
             return $container->get(EntityManagerInterface::class)->getRepository(HostedFileEntity::class);
         },
+
+        /** Services */
+        UuidGeneratorServiceContract::class => \DI\autowire(UuidGeneratorService::class),
     ]);
 };
