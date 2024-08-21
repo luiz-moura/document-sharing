@@ -14,6 +14,7 @@ class FileRepository extends EntityRepository implements FileRepositoryContract
     public function create(CreateFileData $file): int
     {
         $file = new FileEntity(
+            $file->uuid,
             $file->name,
             $file->size,
             $file->mimeType,

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Sender;
 
+use App\Domain\Common\Uuid\Contracts\UuidGeneratorService;
 use App\Domain\Sender\Actions\SendFileToHostingAction;
 use App\Domain\Sender\Actions\UploadFileAction;
 use App\Domain\Sender\Contracts\FileHostingRepository;
@@ -29,6 +30,7 @@ class UploadFileActionTest extends TestCase
     private $fileHostingRepository;
     private $hostingRepository;
     private $sendFileToHostingAction;
+    private $uuidGeneratorService;
     private UploadFileAction $sut;
 
     protected function setUp(): void
@@ -45,12 +47,15 @@ class UploadFileActionTest extends TestCase
         $this->hostingRepository = $this->createMock(HostingRepository::class);
         /** @var SendFileToHostingAction */
         $this->sendFileToHostingAction = $this->createMock(SendFileToHostingAction::class);
+        /** @var UuidGeneratorService */
+        $this->uuidGeneratorService = $this->createMock(UuidGeneratorService::class);
 
         $this->sut = new UploadFileAction(
             $this->fileRepository,
             $this->fileHostingRepository,
             $this->hostingRepository,
             $this->sendFileToHostingAction,
+            $this->uuidGeneratorService,
         );
     }
 
@@ -58,6 +63,26 @@ class UploadFileActionTest extends TestCase
     {
         $hostingSlug = [$this->faker->randomDigitNotZero(), $this->faker->slug(1)];
         $uploadedFile = UploadedFileFactory::create(['error' => UPLOAD_ERR_CANT_WRITE]);
+
+        $this->hostingRepository
+            ->expects($this->never())
+            ->method('queryBySlugs');
+
+        $this->uuidGeneratorService
+            ->expects($this->never())
+            ->method('generateUuid');
+
+        $this->fileRepository
+            ->expects($this->never())
+            ->method('create');
+
+        $this->fileHostingRepository
+            ->expects($this->never())
+            ->method('create');
+
+        $this->sendFileToHostingAction
+            ->expects($this->never())
+            ->method('__invoke');
 
         $this->expectException(InvalidFileException::class);
         $this->expectExceptionMessage('Failed to write file to disk.');
@@ -81,6 +106,10 @@ class UploadFileActionTest extends TestCase
             ->method('queryBySlugs')
             ->with($hostingSlugs)
             ->willReturn([]);
+
+        $this->uuidGeneratorService
+            ->expects($this->never())
+            ->method('generateUuid');
 
         $this->fileRepository
             ->expects($this->never())
@@ -121,6 +150,11 @@ class UploadFileActionTest extends TestCase
             ->method('queryBySlugs')
             ->with($hostingSlugs)
             ->willReturn([$googleDriveHosting, $dropboxHosting]);
+
+        $this->uuidGeneratorService
+            ->expects($this->once())
+            ->method('generateUuid')
+            ->willReturn($createFile->uuid);
 
         $this->fileRepository
             ->expects($this->once())

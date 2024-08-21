@@ -30,9 +30,13 @@ composer-install:
 migrate:
 	docker compose run php-fpm php src/Infrastructure/Persistence/Doctrine/bin.php migrations:migrate
 
-.PHONY: create-migration
+.PHONY: migration-generate
 migration-generate:
 	docker compose run php-fpm php src/Infrastructure/Persistence/Doctrine/bin.php migrations:generate
+
+.PHONY: migration-diff
+migration-diff:
+	docker compose run php-fpm php src/Infrastructure/Persistence/Doctrine/bin.php migrations:diff
 
 .PHONY: test
 test:

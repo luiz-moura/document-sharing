@@ -47,7 +47,13 @@ class HostedFileEntity
     )]
     private ?string $webContentLink;
 
-    #[ORM\Column(name: 'created_at', type: 'datetimetz_immutable')]
+    #[ORM\Column(
+        name: 'created_at',
+        type: 'datetimetz_immutable',
+        insertable: false,
+        updatable: false,
+        options: ['default' => 'CURRENT_TIMESTAMP'],
+    )]
     private DateTimeImmutable $createdAt;
 
     public function __construct(
@@ -64,7 +70,6 @@ class HostedFileEntity
         $this->externalFileId = $externalFileId;
         $this->webViewLink = $webViewLink;
         $this->webContentLink = $webContentLink;
-        $this->createdAt = new DateTimeImmutable('now');
     }
 
     public function getId(): int

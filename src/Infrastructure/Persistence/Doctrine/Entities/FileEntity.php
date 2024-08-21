@@ -16,6 +16,9 @@ class FileEntity
     #[ORM\GeneratedValue(strategy: 'AUTO')]
     private int $id;
 
+    #[ORM\Column(type: 'guid')]
+    private string $uuid;
+
     #[ORM\Column(type: 'string')]
     private string $name;
 
@@ -25,23 +28,35 @@ class FileEntity
     #[ORM\Column(name: 'mime_type', type: 'string')]
     private string $mimeType;
 
-    #[ORM\Column(name: 'created_at', type: 'datetimetz_immutable')]
+    #[ORM\Column(
+        name: 'created_at',
+        type: 'datetimetz_immutable',
+        insertable: false,
+        updatable: false,
+        options: ['default' => 'CURRENT_TIMESTAMP',
+    ])]
     private DateTimeImmutable $createdAt;
 
     public function __construct(
+        string $uuid,
         string $name,
         int $size,
         string $mimeType,
     ) {
+        $this->uuid = $uuid;
         $this->name = $name;
         $this->size = $size;
         $this->mimeType = $mimeType;
-        $this->createdAt = new DateTimeImmutable('now');
     }
 
     public function getId(): int
     {
         return $this->id;
+    }
+
+    public function getUuid(): string
+    {
+        return $this->uuid;
     }
 
     public function getName(): string
