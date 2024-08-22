@@ -24,7 +24,7 @@ env:
 .PHONY: composer-install
 composer-install:
 	@echo "Installing composer dependencies"
-	docker compose run composer install
+	docker compose run php-fpm composer install
 
 .PHONY: migrate
 migrate:
@@ -40,4 +40,4 @@ migration-diff:
 
 .PHONY: test
 test:
-	docker compose run composer test
+	docker compose run php-fpm composer test
