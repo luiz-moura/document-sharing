@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Tests\Unit\Sender;
 
 use App\Domain\Sender\Actions\SendFileToHostingAction;
-use App\Domain\Sender\Contracts\FileHostingRepository;
+use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileSenderFactory;
 use App\Domain\Sender\Contracts\FileSenderService;
-use App\Domain\Sender\DTOs\UpdateAccessLinkFileHostingData;
+use App\Domain\Sender\DTOs\UpdateAccessLinkHostedFileData;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Tests\Utils\Mocks\Sender\HostedFileDataFactory;
@@ -18,7 +18,7 @@ class SendFileToHostingActionTest extends TestCase
 {
     private $fileSenderFactory;
     private $fileSenderService;
-    private $fileHostingRepository;
+    private $hostedFileRepository;
     private $logger;
     private SendFileToHostingAction $sut;
 
@@ -29,13 +29,13 @@ class SendFileToHostingActionTest extends TestCase
         /** @var FileSenderFactory */
         $this->fileSenderFactory = $this->createMock(FileSenderFactory::class);
         $this->fileSenderService = $this->createMock(FileSenderService::class);
-        /** @var FileHostingRepository */
-        $this->fileHostingRepository = $this->createMock(FileHostingRepository::class);
+        /** @var HostedFileRepository */
+        $this->hostedFileRepository = $this->createMock(HostedFileRepository::class);
         /** @var LoggerInterface */
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->sut = new SendFileToHostingAction(
-            $this->fileHostingRepository,
+            $this->hostedFileRepository,
             $this->fileSenderFactory,
             $this->logger,
         );
@@ -46,7 +46,7 @@ class SendFileToHostingActionTest extends TestCase
         $sendFileToHosting = SendFileToHostingDataFactory::create();
 
         $hostedFile = HostedFileDataFactory::create();
-        $updateAccessLinkFileHosting = new UpdateAccessLinkFileHostingData(
+        $updateAccessLinkHostedFile = new UpdateAccessLinkHostedFileData(
             externalFileId: $hostedFile->fileId,
             webViewLink: $hostedFile->webViewLink,
             webContentLink: $hostedFile->webContentLink,
@@ -64,12 +64,12 @@ class SendFileToHostingActionTest extends TestCase
             ->with($sendFileToHosting->hosting->slug)
             ->willReturn($this->fileSenderService);
 
-        $this->fileHostingRepository
+        $this->hostedFileRepository
             ->expects($this->once())
             ->method('updateAccessLink')
             ->with(
-                $sendFileToHosting->fileHostingId,
-                $updateAccessLinkFileHosting
+                $sendFileToHosting->hostedFileId,
+                $updateAccessLinkHostedFile
             );
 
         $this->sut->__invoke($sendFileToHosting);

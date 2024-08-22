@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Domain\Sender\Actions;
 
-use App\Domain\Sender\Contracts\FileHostingRepository;
+use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileSenderFactory;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
-use App\Domain\Sender\DTOs\UpdateAccessLinkFileHostingData;
+use App\Domain\Sender\DTOs\UpdateAccessLinkHostedFileData;
 use App\Domain\Sender\Exceptions\FailedToUploadFileToHostingException;
 use Psr\Log\LoggerInterface;
 use Throwable;
@@ -15,7 +15,7 @@ use Throwable;
 class SendFileToHostingAction
 {
     public function __construct(
-        private FileHostingRepository $fileHostingRepository,
+        private HostedFileRepository $hostedFileRepository,
         private FileSenderFactory $fileSenderFactory,
         private LoggerInterface $logger,
     ) {}
@@ -33,9 +33,9 @@ class SendFileToHostingAction
             throw new FailedToUploadFileToHostingException();
         }
 
-        $this->fileHostingRepository->updateAccessLink(
-            $sendFileToHosting->fileHostingId,
-            new UpdateAccessLinkFileHostingData(
+        $this->hostedFileRepository->updateAccessLink(
+            $sendFileToHosting->hostedFileId,
+            new UpdateAccessLinkHostedFileData(
                 externalFileId: $hostedFile->fileId,
                 webViewLink: $hostedFile->webViewLink,
                 webContentLink: $hostedFile->webContentLink,
@@ -49,7 +49,7 @@ class SendFileToHostingAction
             context: [
                 'exception' => (string) $ex,
                 'hosting_id' => $sendFileToHosting->hosting->id,
-                'file_id' => $sendFileToHosting->fileHostingId,
+                'file_id' => $sendFileToHosting->hostedFileId,
                 'uploadedFile' => [
                     'filename' => $sendFileToHosting->uploadedFile->getClientFilename(),
                     'media_type' => $sendFileToHosting->uploadedFile->getClientMediaType(),

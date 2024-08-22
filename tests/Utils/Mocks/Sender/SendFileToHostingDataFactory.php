@@ -23,7 +23,7 @@ class SendFileToHostingDataFactory extends MockFactory
         $faker = faker();
 
         return [
-            'fileHostingId' => $faker->randomDigitNotZero(),
+            'hostedFileId' => $faker->randomDigitNotZero(),
             'hosting' => new HostingData(
                 id: $faker->randomDigitNotZero(),
                 name: $faker->monthName(),

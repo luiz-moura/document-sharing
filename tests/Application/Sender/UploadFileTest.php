@@ -7,10 +7,10 @@ namespace Tests\Application\Sender;
 use App\Application\Handlers\HttpErrorHandler;
 use App\Domain\Common\Uuid\Contracts\UuidGeneratorService;
 use App\Domain\Sender\Actions\SendFileToHostingAction;
-use App\Domain\Sender\Contracts\FileHostingRepository;
+use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
-use App\Domain\Sender\DTOs\CreateFileHostingData;
+use App\Domain\Sender\DTOs\CreateHostedFileData;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use DI\Container;
@@ -29,7 +29,7 @@ class UploadFileTest extends TestCase
     private Container $container;
     private Generator $faker;
     private $fileRepositoryProphecy;
-    private $fileHostingRepositoryProphecy;
+    private $hostedFileRepositoryProphecy;
     private $hostingRepositoryProphecy;
     private $sendFileToHostingAction;
     private $uuidGeneratorService;
@@ -44,7 +44,7 @@ class UploadFileTest extends TestCase
         $this->faker = faker();
 
         $this->fileRepositoryProphecy = $this->prophesize(FileRepository::class);
-        $this->fileHostingRepositoryProphecy = $this->prophesize(FileHostingRepository::class);
+        $this->hostedFileRepositoryProphecy = $this->prophesize(HostedFileRepository::class);
         $this->hostingRepositoryProphecy = $this->prophesize(HostingRepository::class);
         $this->sendFileToHostingAction = $this->prophesize(SendFileToHostingAction::class);
         $this->uuidGeneratorService = $this->prophesize(UuidGeneratorService::class);
@@ -63,12 +63,12 @@ class UploadFileTest extends TestCase
 
         $this->hostingRepositoryProphecy->queryBySlugs()->shouldNotBeCalled();
         $this->fileRepositoryProphecy->create()->shouldNotBeCalled();
-        $this->fileHostingRepositoryProphecy->create()->shouldNotBeCalled();
+        $this->hostedFileRepositoryProphecy->create()->shouldNotBeCalled();
         $this->sendFileToHostingAction->__invoke()->shouldNotBeCalled();
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
 
         $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
-        $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
+        $this->container->set(HostedFileRepository::class, $this->hostedFileRepositoryProphecy->reveal());
         $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
         $this->container->set(SendFileToHostingAction::class, $this->sendFileToHostingAction->reveal());
         $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
@@ -97,12 +97,12 @@ class UploadFileTest extends TestCase
 
         $this->hostingRepositoryProphecy->queryBySlugs()->shouldNotBeCalled();
         $this->fileRepositoryProphecy->create()->shouldNotBeCalled();
-        $this->fileHostingRepositoryProphecy->create()->shouldNotBeCalled();
+        $this->hostedFileRepositoryProphecy->create()->shouldNotBeCalled();
         $this->sendFileToHostingAction->__invoke()->shouldNotBeCalled();
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
 
         $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
-        $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
+        $this->container->set(HostedFileRepository::class, $this->hostedFileRepositoryProphecy->reveal());
         $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
         $this->container->set(SendFileToHostingAction::class, $this->sendFileToHostingAction->reveal());
         $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
@@ -133,12 +133,12 @@ class UploadFileTest extends TestCase
 
         $this->hostingRepositoryProphecy->queryBySlugs()->shouldNotBeCalled();
         $this->fileRepositoryProphecy->create()->shouldNotBeCalled();
-        $this->fileHostingRepositoryProphecy->create()->shouldNotBeCalled();
+        $this->hostedFileRepositoryProphecy->create()->shouldNotBeCalled();
         $this->sendFileToHostingAction->__invoke()->shouldNotBeCalled();
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
 
         $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
-        $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
+        $this->container->set(HostedFileRepository::class, $this->hostedFileRepositoryProphecy->reveal());
         $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
         $this->container->set(SendFileToHostingAction::class, $this->sendFileToHostingAction->reveal());
         $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
@@ -163,7 +163,7 @@ class UploadFileTest extends TestCase
         $fileId = $this->faker->randomDigitNotZero();
         $hostingSlugs = [$this->faker->randomDigitNotZero()];
         $googleDriveHosting = new HostingData($hostingSlugs[0], 'Google Drive', 'google-drive');
-        $fileHostingId = $this->faker->randomDigitNotZero();
+        $hostedFileId = $this->faker->randomDigitNotZero();
 
         $uploadedFile = UploadedFileFactory::create();
         $createdFile = CreateFileDataFactory::fromUploadedFile($uploadedFile);
@@ -183,20 +183,20 @@ class UploadFileTest extends TestCase
             ->willReturn($fileId)
             ->shouldBeCalledOnce();
 
-        $this->fileHostingRepositoryProphecy
+        $this->hostedFileRepositoryProphecy
             ->create(
-                new CreateFileHostingData(
+                new CreateHostedFileData(
                     fileId: $fileId,
                     hosting: $googleDriveHosting
                 ),
             )
-            ->willReturn($fileHostingId)
+            ->willReturn($hostedFileId)
             ->shouldBeCalledOnce();
 
         $this->sendFileToHostingAction
             ->__invoke(
                 new SendFileToHostingData(
-                    $fileHostingId,
+                    $hostedFileId,
                     $googleDriveHosting,
                     $uploadedFile,
                 )
@@ -204,7 +204,7 @@ class UploadFileTest extends TestCase
             ->shouldBeCalledOnce();
 
         $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
-        $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
+        $this->container->set(HostedFileRepository::class, $this->hostedFileRepositoryProphecy->reveal());
         $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
         $this->container->set(SendFileToHostingAction::class, $this->sendFileToHostingAction->reveal());
         $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());

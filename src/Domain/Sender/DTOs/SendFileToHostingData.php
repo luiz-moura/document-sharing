@@ -9,7 +9,7 @@ use Psr\Http\Message\UploadedFileInterface;
 class SendFileToHostingData
 {
     public function __construct(
-        public int $fileHostingId,
+        public int $hostedFileId,
         public HostingData $hosting,
         public UploadedFileInterface $uploadedFile,
     ) {}

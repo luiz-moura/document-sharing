@@ -6,7 +6,7 @@ namespace App\Domain\Sender\DTOs;
 
 use App\Domain\Sender\Enums\FileStatusEnum;
 
-class CreateFileHostingData
+class CreateHostedFileData
 {
     public function __construct(
         public int $fileId,
