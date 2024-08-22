@@ -6,7 +6,7 @@ namespace App\Domain\Sender\DTOs;
 
 use App\Domain\Sender\Enums\FileStatusEnum;
 
-class UpdateAccessLinkFileHostingData
+class UpdateAccessLinkHostedFileData
 {
     public function __construct(
         public string $externalFileId,

@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace App\Domain\Sender\Actions;
 
 use App\Domain\Common\Uuid\Contracts\UuidGeneratorService;
-use App\Domain\Sender\Contracts\FileHostingRepository;
+use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\CreateFileData;
-use App\Domain\Sender\DTOs\CreateFileHostingData;
+use App\Domain\Sender\DTOs\CreateHostedFileData;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\DTOs\UploadRequestData;
@@ -21,7 +21,7 @@ class UploadFileAction
 {
     public function __construct(
         private FileRepository $fileRepository,
-        private FileHostingRepository $fileHostRepository,
+        private HostedFileRepository $fileHostRepository,
         private HostingRepository $hostingRepository,
         private SendFileToHostingAction $sendFileToHostingAction,
         private UuidGeneratorService $uuidGeneratorService,
@@ -45,8 +45,8 @@ class UploadFileAction
         );
 
         foreach ($hosts as $hosting) {
-            $fileHostingId = $this->fileHostRepository->create(
-                new CreateFileHostingData(
+            $hostedFileId = $this->fileHostRepository->create(
+                new CreateHostedFileData(
                     $fileId,
                     $hosting
                 )
@@ -54,7 +54,7 @@ class UploadFileAction
 
             ($this->sendFileToHostingAction)(
                 new SendFileToHostingData(
-                    $fileHostingId,
+                    $hostedFileId,
                     $hosting,
                     $uploadRequest->uploadedFile,
                 )

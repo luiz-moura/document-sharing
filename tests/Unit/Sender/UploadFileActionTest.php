@@ -7,10 +7,10 @@ namespace Tests\Unit\Sender;
 use App\Domain\Common\Uuid\Contracts\UuidGeneratorService;
 use App\Domain\Sender\Actions\SendFileToHostingAction;
 use App\Domain\Sender\Actions\UploadFileAction;
-use App\Domain\Sender\Contracts\FileHostingRepository;
+use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
-use App\Domain\Sender\DTOs\CreateFileHostingData;
+use App\Domain\Sender\DTOs\CreateHostedFileData;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\DTOs\UploadRequestData;
@@ -27,7 +27,7 @@ class UploadFileActionTest extends TestCase
 {
     private Generator $faker;
     private $fileRepository;
-    private $fileHostingRepository;
+    private $hostedFileRepository;
     private $hostingRepository;
     private $sendFileToHostingAction;
     private $uuidGeneratorService;
@@ -41,8 +41,8 @@ class UploadFileActionTest extends TestCase
 
         /** @var FileRepository */
         $this->fileRepository = $this->createMock(FileRepository::class);
-        /** @var FileHostingRepository */
-        $this->fileHostingRepository = $this->createMock(FileHostingRepository::class);
+        /** @var HostedFileRepository */
+        $this->hostedFileRepository = $this->createMock(HostedFileRepository::class);
         /** @var HostingRepository */
         $this->hostingRepository = $this->createMock(HostingRepository::class);
         /** @var SendFileToHostingAction */
@@ -52,7 +52,7 @@ class UploadFileActionTest extends TestCase
 
         $this->sut = new UploadFileAction(
             $this->fileRepository,
-            $this->fileHostingRepository,
+            $this->hostedFileRepository,
             $this->hostingRepository,
             $this->sendFileToHostingAction,
             $this->uuidGeneratorService,
@@ -76,7 +76,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('create');
 
-        $this->fileHostingRepository
+        $this->hostedFileRepository
             ->expects($this->never())
             ->method('create');
 
@@ -115,7 +115,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('create');
 
-        $this->fileHostingRepository
+        $this->hostedFileRepository
             ->expects($this->never())
             ->method('create');
 
@@ -143,7 +143,7 @@ class UploadFileActionTest extends TestCase
         $googleDriveHosting = new HostingData(1, 'Google Drive', 'google-drive');
         $dropboxHosting = new HostingData(2, 'Dropbox', 'dropbox');
 
-        $fileHostingIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];
+        $hostedFileIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];
 
         $this->hostingRepository
             ->expects($this->once())
@@ -162,23 +162,23 @@ class UploadFileActionTest extends TestCase
             ->with($createFile)
             ->willReturn($fileId);
 
-        $this->fileHostingRepository
+        $this->hostedFileRepository
             ->expects($this->exactly(2))
             ->method('create')
             ->with(
                 $this->logicalOr(
-                    new CreateFileHostingData(
+                    new CreateHostedFileData(
                         fileId: $fileId,
                         hosting: $googleDriveHosting
                     ),
-                    new CreateFileHostingData(
+                    new CreateHostedFileData(
                         fileId: $fileId,
                         hosting: $dropboxHosting
                     ),
                 )
             )->willReturnOnConsecutiveCalls(
-                $fileHostingIds[0],
-                $fileHostingIds[1]
+                $hostedFileIds[0],
+                $hostedFileIds[1]
             );
 
         $this->sendFileToHostingAction
@@ -187,12 +187,12 @@ class UploadFileActionTest extends TestCase
             ->with(
                 $this->logicalOr(
                     new SendFileToHostingData(
-                        $fileHostingIds[0],
+                        $hostedFileIds[0],
                         $googleDriveHosting,
                         $uploadedFile,
                     ),
                     new SendFileToHostingData(
-                        $fileHostingIds[1],
+                        $hostedFileIds[1],
                         $dropboxHosting,
                         $uploadedFile,
                     ),

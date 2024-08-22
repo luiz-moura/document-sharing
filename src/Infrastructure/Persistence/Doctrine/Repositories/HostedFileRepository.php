@@ -4,15 +4,15 @@ declare(strict_types= 1);
 
 namespace App\Infrastructure\Persistence\Doctrine\Repositories;
 
-use App\Domain\Sender\Contracts\FileHostingRepository as FileHostingRepositoryContract;
-use App\Domain\Sender\DTOs\CreateFileHostingData;
-use App\Domain\Sender\DTOs\UpdateAccessLinkFileHostingData;
+use App\Domain\Sender\Contracts\HostedFileRepository as HostedFileRepositoryContract;
+use App\Domain\Sender\DTOs\CreateHostedFileData;
+use App\Domain\Sender\DTOs\UpdateAccessLinkHostedFileData;
 use App\Infrastructure\Persistence\Doctrine\Entities\HostedFileEntity;
 use Doctrine\ORM\EntityRepository;
 
-class HostedFileRepository extends EntityRepository implements FileHostingRepositoryContract
+class HostedFileRepository extends EntityRepository implements HostedFileRepositoryContract
 {
-    public function create(CreateFileHostingData $hostedFile): int
+    public function create(CreateHostedFileData $hostedFile): int
     {
         $hostedFile = new HostedFileEntity(
             $hostedFile->fileId,
@@ -26,14 +26,14 @@ class HostedFileRepository extends EntityRepository implements FileHostingReposi
         return $hostedFile->getId();
     }
 
-    public function updateAccessLink(int $fileHostingId, UpdateAccessLinkFileHostingData $fileHosting): void
+    public function updateAccessLink(int $hostedFileId, UpdateAccessLinkHostedFileData $hostedFile): void
     {
-        $hostedFile = $this->find($fileHostingId);
+        $hostedFile = $this->find($hostedFileId);
 
-        $hostedFile->setStatus($fileHosting->status)
-            ->setWebContentLink($fileHosting->webContentLink)
-            ->setWebViewLink($fileHosting->webViewLink)
-            ->setExternalFileId($fileHosting->externalFileId);
+        $hostedFile->setStatus($hostedFile->status)
+            ->setWebContentLink($hostedFile->webContentLink)
+            ->setWebViewLink($hostedFile->webViewLink)
+            ->setExternalFileId($hostedFile->externalFileId);
 
         $this->getEntityManager()->persist($hostedFile);
         $this->getEntityManager()->flush();
