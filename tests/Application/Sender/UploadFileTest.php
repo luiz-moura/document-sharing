@@ -95,6 +95,18 @@ class UploadFileTest extends TestCase
 
         $this->app->add($errorMiddleware);
 
+        $this->hostingRepositoryProphecy->queryBySlugs()->shouldNotBeCalled();
+        $this->fileRepositoryProphecy->create()->shouldNotBeCalled();
+        $this->fileHostingRepositoryProphecy->create()->shouldNotBeCalled();
+        $this->sendFileToHostingAction->__invoke()->shouldNotBeCalled();
+        $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
+
+        $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
+        $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
+        $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
+        $this->container->set(SendFileToHostingAction::class, $this->sendFileToHostingAction->reveal());
+        $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
+
         $uploadedFile = UploadedFileFactory::create();
 
         $request = $this->createRequest('POST', '/upload')
@@ -118,6 +130,18 @@ class UploadFileTest extends TestCase
         $errorMiddleware->setDefaultErrorHandler($errorHandler);
 
         $this->app->add($errorMiddleware);
+
+        $this->hostingRepositoryProphecy->queryBySlugs()->shouldNotBeCalled();
+        $this->fileRepositoryProphecy->create()->shouldNotBeCalled();
+        $this->fileHostingRepositoryProphecy->create()->shouldNotBeCalled();
+        $this->sendFileToHostingAction->__invoke()->shouldNotBeCalled();
+        $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
+
+        $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
+        $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
+        $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
+        $this->container->set(SendFileToHostingAction::class, $this->sendFileToHostingAction->reveal());
+        $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
 
         $hostingSlugs = [$this->faker->slug(1)];
         $uploadedFile = $uploadedFile = UploadedFileFactory::create(['error' => UPLOAD_ERR_NO_FILE]);
@@ -191,7 +215,9 @@ class UploadFileTest extends TestCase
 
         $response = $this->app->handle($request);
 
-        $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_OK);
-        $this->assertEmpty((string) $response->getBody());
+        $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_CREATED);
+
+        $responseBody = json_decode((string) $response->getBody(), true);
+        $this->assertEquals($responseBody, ['file_id' => $createdFile->uuid]);
     }
 }

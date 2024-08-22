@@ -23,8 +23,14 @@ class UploadController
             uploadedFile: $request->getUploadedFiles()['file'] ?? null
         );
 
-        ($this->uploadFileAction)($uploadRequest);
+        $fileUuid = ($this->uploadFileAction)($uploadRequest);
 
-        return $response->withStatus(StatusCode::STATUS_OK);
+        $response->getBody()->write(
+            json_encode(['file_id' => $fileUuid])
+        );
+
+        return $response
+            ->withStatus(StatusCode::STATUS_CREATED)
+            ->withHeader('Content-Type', 'application/json');
     }
 }
