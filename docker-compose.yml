@@ -15,7 +15,7 @@ services:
             - .:/var/www
             - logs:/var/www/logs
         networks:
-            - app-network
+            - document-sharing-network
     postgres:
         image: postgres:16
         environment:
@@ -27,7 +27,18 @@ services:
         volumes:
             - document-sharing-db:/var/lib/postgresql/data
         networks:
-            - app-network
+            - document-sharing-network
+    rabbitmq:
+        image: rabbitmq:3-management-alpine
+        container_name: rabbitmq
+        ports:
+            - 5672:5672
+            - 15672:15672
+        volumes:
+            - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+            - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+        networks:
+            - document-sharing-network
 
 volumes:
     logs:
@@ -36,5 +47,5 @@ volumes:
         driver: local
 
 networks:
-  app-network:
+  document-sharing-network:
     driver: bridge
