@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '/../../../../vendor/autoload.php';
+require __DIR__ . '/../../../../app/bootstrap.php';
 
 use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
 use Doctrine\ORM\Tools\Console\ConsoleRunner;
@@ -8,10 +8,6 @@ use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
 use Doctrine\Migrations\Tools\Console\Command;
 use Doctrine\Migrations\DependencyFactory;
 use Doctrine\Migrations\Configuration\Migration\PhpFile;
-use Symfony\Component\Dotenv\Dotenv;
-
-$dotenv = new Dotenv();
-$dotenv->load(__DIR__.'/../../../../.env');
 
 $entityManager = require __DIR__ . '/entity-manager.php';
 
