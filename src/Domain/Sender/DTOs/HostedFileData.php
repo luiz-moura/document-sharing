@@ -11,5 +11,6 @@ class HostedFileData
         public string $fileName,
         public string $webViewLink,
         public string $webContentLink,
-    ) {}
+    ) {
+    }
 }

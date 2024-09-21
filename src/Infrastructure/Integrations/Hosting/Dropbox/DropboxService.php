@@ -3,39 +3,59 @@
 namespace App\Infrastructure\Integrations\Hosting\Dropbox;
 
 use App\Domain\Sender\Contracts\FileSenderService;
+use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostedFileData;
-use Psr\Http\Message\UploadedFileInterface;
+use Psr\Log\LoggerInterface;
 use Spatie\Dropbox\Client as DropboxClient;
+use Throwable;
 
 class DropboxService implements FileSenderService
 {
     private DropboxClient $client;
 
-    public function __construct()
-    {
+    public function __construct(
+        private LoggerInterface $logger
+    ) {
         $dropboxToken = config('dropbox.token');
         $this->client = new DropboxClient($dropboxToken);
     }
 
-    public function send(UploadedFileInterface $fileToUpload): HostedFileData
+    public function send(EncodedFileData $encodedFile): HostedFileData
     {
-        $fileName = $this->generateFileName($fileToUpload->getClientFilename());
+        $this->logger->info(sprintf('[%s] Uploading file to Dropbox.', __METHOD__), [
+            'file' => $encodedFile->filename,
+            'mediaType' => $encodedFile->mediaType,
+            'size' => $encodedFile->size,
+        ]);
 
-        $uploadedFile = $this->client->upload(
-            $fileName,
-            file_get_contents($fileToUpload->getStream()->getMetadata('uri')),
-            'add'
-        );
+        $fileName = $this->generateFileName($encodedFile->filename);
 
-        $sharedLink = $this->client->createSharedLinkWithSettings($uploadedFile['path_display']);
+        try {
+            /**
+             * @var array{path_display: string, id: string, name: string} $uploadedFile
+             */
+            $uploadedFile = $this->client->upload($fileName, $encodedFile->base64, 'add');
+            /**
+             * @var array{url: string} $sharedLink
+             */
+            $sharedLink = $this->client->createSharedLinkWithSettings($uploadedFile['path_display']);
+        } catch (Throwable $exception) {
+            $this->logger->error(sprintf('[%s] Failed to upload file to Dropbox.', __METHOD__), [
+                'file' => $encodedFile->filename,
+                'mediaType' => $encodedFile->mediaType,
+                'size' => $encodedFile->size,
+                'ex' => (string) $exception
+            ]);
 
-        $previewLink = $sharedLink['url'];
-        $downloadLink = str_replace('?dl=0', '?dl=1', $previewLink);
+            throw $exception;
+        }
+
+        $downloadLink = str_replace('?dl=0', '?dl=1', $sharedLink['url']);
 
         return new HostedFileData(
             fileId: (string) $uploadedFile['id'],
             fileName: $uploadedFile['name'],
-            webViewLink: $previewLink,
+            webViewLink: $sharedLink['url'],
             webContentLink: $downloadLink
         );
     }
@@ -47,7 +67,7 @@ class DropboxService implements FileSenderService
         return "/{$pathInfo['filename']}-{$this->randomString()}.{$pathInfo['extension']}";
     }
 
-    private function randomString(): string
+    protected function randomString(): string
     {
         return bin2hex(random_bytes(6));
     }

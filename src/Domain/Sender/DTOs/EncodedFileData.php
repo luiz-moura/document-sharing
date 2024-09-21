@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Domain\Sender\DTOs;
 
-class CreateFileData
+class EncodedFileData
 {
     public function __construct(
-        public string $uuid,
-        public string $name,
+        public string $filename,
+        public string $mediaType,
         public int $size,
-        public string $mimeType,
+        public string $base64,
     ) {
     }
 }

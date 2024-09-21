@@ -12,5 +12,6 @@ class CreateHostedFileData
         public int $fileId,
         public HostingData $hosting,
         public FileStatusEnum $status = FileStatusEnum::TO_SEND,
-    ) {}
+    ) {
+    }
 }

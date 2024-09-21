@@ -1,12 +1,13 @@
 <?php
 
-declare(strict_types= 1);
+declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\Repositories;
 
 use App\Domain\Sender\Contracts\HostedFileRepository as HostedFileRepositoryContract;
 use App\Domain\Sender\DTOs\CreateHostedFileData;
 use App\Domain\Sender\DTOs\UpdateAccessLinkHostedFileData;
+use App\Domain\Sender\Enums\FileStatusEnum;
 use App\Infrastructure\Persistence\Doctrine\Entities\HostedFileEntity;
 use Doctrine\ORM\EntityRepository;
 
@@ -14,28 +15,38 @@ class HostedFileRepository extends EntityRepository implements HostedFileReposit
 {
     public function create(CreateHostedFileData $hostedFile): int
     {
-        $hostedFile = new HostedFileEntity(
+        $hostedFileEntity = new HostedFileEntity(
             $hostedFile->fileId,
             $hostedFile->hosting->id,
             $hostedFile->status->value,
         );
 
-        $this->getEntityManager()->persist($hostedFile);
+        $this->getEntityManager()->persist($hostedFileEntity);
         $this->getEntityManager()->flush();
 
-        return $hostedFile->getId();
+        return $hostedFileEntity->getId();
     }
 
     public function updateAccessLink(int $hostedFileId, UpdateAccessLinkHostedFileData $hostedFile): void
     {
-        $hostedFile = $this->find($hostedFileId);
+        $hostedFileEntity = $this->find($hostedFileId);
 
-        $hostedFile->setStatus($hostedFile->status)
+        $hostedFileEntity->setStatus($hostedFile->status)
             ->setWebContentLink($hostedFile->webContentLink)
             ->setWebViewLink($hostedFile->webViewLink)
             ->setExternalFileId($hostedFile->externalFileId);
 
-        $this->getEntityManager()->persist($hostedFile);
+        $this->getEntityManager()->persist($hostedFileEntity);
+        $this->getEntityManager()->flush();
+    }
+
+    public function updateStatus(int $hostedFileId, FileStatusEnum $status): void
+    {
+        $hostedFileEntity = $this->find($hostedFileId);
+
+        $hostedFileEntity->setStatus($status);
+
+        $this->getEntityManager()->persist($hostedFileEntity);
         $this->getEntityManager()->flush();
     }
 }

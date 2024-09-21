@@ -13,5 +13,6 @@ class UpdateAccessLinkHostedFileData
         public string $webViewLink,
         public string $webContentLink,
         public FileStatusEnum $status = FileStatusEnum::SEND_SUCCESS
-    ) {}
+    ) {
+    }
 }
