@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types= 1);
+declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\Repositories;
 
@@ -13,16 +13,16 @@ class FileRepository extends EntityRepository implements FileRepositoryContract
 {
     public function create(CreateFileData $file): int
     {
-        $file = new FileEntity(
+        $fileEntity = new FileEntity(
             $file->uuid,
             $file->name,
             $file->size,
             $file->mimeType,
         );
 
-        $this->getEntityManager()->persist($file);
+        $this->getEntityManager()->persist($fileEntity);
         $this->getEntityManager()->flush();
 
-        return $file->getId();
+        return $fileEntity->getId();
     }
 }

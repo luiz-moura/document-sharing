@@ -5,18 +5,18 @@ declare(strict_types=1);
 namespace App\Infrastructure\Integrations\Hosting\InMemory;
 
 use App\Domain\Sender\Contracts\FileSenderService;
+use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostedFileData;
-use Psr\Http\Message\UploadedFileInterface;
 
 class InMemoryFileSenderService implements FileSenderService
 {
-    public function send(UploadedFileInterface $fileToUpload): HostedFileData
+    public function send(EncodedFileData $encodedFile): HostedFileData
     {
         return new HostedFileData(
             fileId: '312312da',
-            fileName: 'inMemory.png',
-            webViewLink: 'http://localhost:8080/inMemory.png',
-            webContentLink: 'http://localhost:8080/inMemory.png'
+            fileName: $encodedFile->filename,
+            webViewLink: "http://localhost:8080/{$encodedFile->filename}.{$encodedFile->mediaType}",
+            webContentLink: "http://localhost:8080/{$encodedFile->filename}.{$encodedFile->mediaType}"
         );
     }
 }

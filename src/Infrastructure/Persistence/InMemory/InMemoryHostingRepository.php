@@ -14,11 +14,12 @@ class InMemoryHostingRepository implements HostingRepository
         $i = 1;
 
         return array_map(
-            fn (string $slug) => new HostingData(
+            fn (string $slug): HostingData => new HostingData(
                 id: $i++,
                 name: 'in Memory',
                 slug: $slug,
-            )
-        , $slugs);
+            ),
+            $slugs
+        );
     }
 }

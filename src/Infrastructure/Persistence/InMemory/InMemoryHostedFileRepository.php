@@ -7,6 +7,7 @@ namespace App\Infrastructure\Persistence\InMemory;
 use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\DTOs\CreateHostedFileData;
 use App\Domain\Sender\DTOs\UpdateAccessLinkHostedFileData;
+use App\Domain\Sender\Enums\FileStatusEnum;
 
 class InMemoryHostedFileRepository implements HostedFileRepository
 {
@@ -16,6 +17,11 @@ class InMemoryHostedFileRepository implements HostedFileRepository
     }
 
     public function updateAccessLink(int $hostedFileId, UpdateAccessLinkHostedFileData $hostedFile): void
+    {
+        sleep(3);
+    }
+
+    public function updateStatus(int $hostedFileId, FileStatusEnum $status): void
     {
         sleep(3);
     }
