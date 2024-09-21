@@ -6,7 +6,7 @@ namespace App\Domain\Common\DTOs;
 
 use App\Domain\Common\Validators\Validator;
 
-abstract class DataTransferObject
+abstract class AbstractDataTransferObject
 {
     public function __construct()
     {
