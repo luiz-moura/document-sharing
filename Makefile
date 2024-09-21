@@ -1,3 +1,8 @@
+DOCKER_PHP=docker compose run php-fpm
+
+DOCTRINE_BIN_PATH=src/Infrastructure/Persistence/Doctrine/bin.php
+WORKER_PATH=src/Infrastructure/Queue/RabbitMQ/Worker.php
+
 .PHONY: install
 install: env up composer-install migrate
 	@echo "Your environment is ready to use!"
@@ -24,20 +29,24 @@ env:
 .PHONY: composer-install
 composer-install:
 	@echo "Installing composer dependencies"
-	docker compose run php-fpm composer install
+	$(DOCKER_PHP) composer install
 
 .PHONY: migrate
 migrate:
-	docker compose run php-fpm php src/Infrastructure/Persistence/Doctrine/bin.php migrations:migrate
+	$(DOCKER_PHP) php $(DOCTRINE_BIN_PATH) migrations:migrate
 
 .PHONY: migration-generate
 migration-generate:
-	docker compose run php-fpm php src/Infrastructure/Persistence/Doctrine/bin.php migrations:generate
+	$(DOCKER_PHP) php $(DOCTRINE_BIN_PATH) migrations:generate
 
 .PHONY: migration-diff
 migration-diff:
-	docker compose run php-fpm php src/Infrastructure/Persistence/Doctrine/bin.php migrations:diff
+	$(DOCKER_PHP) php $(DOCTRINE_BIN_PATH) migrations:diff
 
 .PHONY: test
 test:
-	docker compose run php-fpm composer test
+	$(DOCKER_PHP) composer test
+
+.PHONY: queue-worker
+queue-worker:
+	$(DOCKER_PHP) php $(WORKER_PATH)
