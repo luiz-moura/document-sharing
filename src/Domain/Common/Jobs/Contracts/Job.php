@@ -6,6 +6,7 @@ namespace App\Domain\Common\Jobs\Contracts;
 
 interface Job
 {
+    public function setArgs(mixed ...$args): static;
     public function handle(): void;
-    public function dispatch(mixed ...$args): void;
+    public function dispatch(): void;
 }
