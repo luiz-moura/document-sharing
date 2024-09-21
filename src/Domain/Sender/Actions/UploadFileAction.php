@@ -10,11 +10,13 @@ use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\CreateFileData;
 use App\Domain\Sender\DTOs\CreateHostedFileData;
+use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\DTOs\UploadRequestData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
 use App\Domain\Sender\Exceptions\InvalidFileException;
+use App\Domain\Sender\Jobs\SendFileToHostingJob;
 use Psr\Http\Message\UploadedFileInterface;
 
 class UploadFileAction
@@ -23,24 +25,25 @@ class UploadFileAction
         private FileRepository $fileRepository,
         private HostedFileRepository $fileHostRepository,
         private HostingRepository $hostingRepository,
-        private SendFileToHostingAction $sendFileToHostingAction,
+        private SendFileToHostingJob $sendFileToHostingJob,
         private UuidGeneratorService $uuidGeneratorService,
-    ) {}
+    ) {
+    }
 
     public function __invoke(UploadRequestData $uploadRequest): string
     {
         $this->validateUploadedFile($uploadRequest->uploadedFile);
 
         $hosts = $this->queryHostingByIds($uploadRequest->hostingSlugs);
-
         $uuid = $this->uuidGeneratorService->generateUuid();
 
+        $uploadFile = &$uploadRequest->uploadedFile;
         $fileId = $this->fileRepository->create(
             new CreateFileData(
                 $uuid,
-                $uploadRequest->uploadedFile->getClientFilename(),
-                $uploadRequest->uploadedFile->getSize(),
-                $uploadRequest->uploadedFile->getClientMediaType(),
+                $uploadFile->getClientFilename(),
+                $uploadFile->getSize(),
+                $uploadFile->getClientMediaType(),
             )
         );
 
@@ -52,13 +55,18 @@ class UploadFileAction
                 )
             );
 
-            ($this->sendFileToHostingAction)(
+            $this->sendFileToHostingJob->setArgs(
                 new SendFileToHostingData(
-                    $hostedFileId,
                     $hosting,
-                    $uploadRequest->uploadedFile,
+                    $hostedFileId,
+                    encodedFile: new EncodedFileData(
+                        filename: $uploadFile->getClientFilename(),
+                        mediaType: $uploadFile->getClientMediaType(),
+                        size:  $uploadFile->getSize(),
+                        base64: file_get_contents($uploadFile->getStream()->getMetadata('uri')),
+                    )
                 )
-            );
+            )->dispatch();
         }
 
         return $uuid;
