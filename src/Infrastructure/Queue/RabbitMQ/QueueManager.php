@@ -121,7 +121,7 @@ class QueueManager implements QueueManagerInterface
              */
             $job = unserialize($message->getBody());
 
-            $this->logger->info(sprintf('[%s] Processing message.'.PHP_EOL, $job['class'] ?? __METHOD__));
+            $this->logger->info(sprintf('[%s] Processing message.' . PHP_EOL, $job['class'] ?? __METHOD__));
 
             /** @var Job */
             $jobInstance = $this->container->get($job['class']);
@@ -129,11 +129,11 @@ class QueueManager implements QueueManagerInterface
 
             $message->ack();
 
-            $this->logger->info(sprintf('[%s] Message processed.'.PHP_EOL, $job['class'] ?? __METHOD__));
+            $this->logger->info(sprintf('[%s] Message processed.' . PHP_EOL, $job['class'] ?? __METHOD__));
         } catch (Throwable $exception) {
             $message->nack();
 
-            $this->logger->error(sprintf('[%s] Failed to process message.'.PHP_EOL, $job['class'] ?? __METHOD__), [
+            $this->logger->error(sprintf('[%s] Failed to process message.' . PHP_EOL, $job['class'] ?? __METHOD__), [
                 'ex' => (string) $exception,
             ]);
         }

@@ -7,6 +7,7 @@ namespace Tests\Utils\Mocks\Sender;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use Tests\Utils\Mocks\MockFactory;
+
 use function Tests\Utils\Faker\faker;
 
 class SendFileToHostingDataFactory extends MockFactory

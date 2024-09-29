@@ -21,6 +21,7 @@ use Slim\Middleware\ErrorMiddleware;
 use Tests\Utils\Mocks\Sender\CreateFileDataFactory;
 use Tests\Utils\Mocks\Sender\UploadedFileFactory;
 use Tests\TestCase;
+
 use function Tests\Utils\Faker\faker;
 
 class UploadFileTest extends TestCase

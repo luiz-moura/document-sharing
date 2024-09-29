@@ -7,6 +7,7 @@ namespace Tests\Utils\Mocks\Sender;
 use App\Domain\Sender\DTOs\CreateFileData;
 use Psr\Http\Message\UploadedFileInterface;
 use Tests\Utils\Mocks\MockFactory;
+
 use function Tests\Utils\Faker\faker;
 
 class CreateFileDataFactory extends MockFactory
