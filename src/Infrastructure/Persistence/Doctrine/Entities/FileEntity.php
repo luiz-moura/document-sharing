@@ -1,6 +1,6 @@
 <?php
 
-declare(strict_types= 1);
+declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\Entities;
 
@@ -33,8 +33,8 @@ class FileEntity
         type: 'datetimetz_immutable',
         insertable: false,
         updatable: false,
-        options: ['default' => 'CURRENT_TIMESTAMP',
-    ])]
+        options: ['default' => 'CURRENT_TIMESTAMP']
+    )]
     private DateTimeImmutable $createdAt;
 
     public function __construct(

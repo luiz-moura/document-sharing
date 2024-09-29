@@ -12,7 +12,7 @@ if (! function_exists('config')) {
             return $config;
         }
 
-        return array_reduce($keys, function($carry, $key) use ($config) {
+        return array_reduce($keys, function ($carry, $key) use ($config): mixed {
             if (!$carry) {
                 return $config[$key];
             }

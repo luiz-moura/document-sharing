@@ -5,7 +5,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 
 $ormSetup = ORMSetup::createAttributeMetadataConfiguration(
-    paths: [__DIR__.'/Entities'],
+    paths: [__DIR__ . '/Entities'],
     isDevMode: config('app.env') === 'dev',
 );
 

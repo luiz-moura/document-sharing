@@ -21,6 +21,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\UploadedFileInterface;
 use Tests\Utils\Mocks\Sender\CreateFileDataFactory;
 use Tests\Utils\Mocks\Sender\UploadedFileFactory;
+
 use function Tests\Utils\Faker\faker;
 
 class UploadFileActionTest extends TestCase

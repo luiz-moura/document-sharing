@@ -12,10 +12,10 @@ $containerBuilder = new ContainerBuilder();
 
 // Set up env
 $dotenv = new Dotenv();
-$dotenv->load(__DIR__.'/../.env');
+$dotenv->load(__DIR__ . '/../.env');
 
 if ($_ENV['APP_ENV']) {
-	$containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
+    $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
 }
 
 // Set up settings

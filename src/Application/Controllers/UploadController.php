@@ -14,7 +14,8 @@ class UploadController
 {
     public function __construct(
         private UploadFileAction $uploadFileAction,
-    ) {}
+    ) {
+    }
 
     public function upload(Request $request, Response $response): Response
     {
