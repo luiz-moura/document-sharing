@@ -26,6 +26,11 @@ class QueueManager implements QueueManagerInterface
         $this->connect($maxRetries, $retryDelaySeconds);
     }
 
+    public function __destruct()
+    {
+        $this->disconnect();
+    }
+
     /**
      * @throws Throwable
      */
@@ -77,7 +82,7 @@ class QueueManager implements QueueManagerInterface
         }
     }
 
-    public function __destruct()
+    public function disconnect(): void
     {
         if (isset($this->channel)) {
             $this->channel->close();
@@ -117,7 +122,7 @@ class QueueManager implements QueueManagerInterface
     {
         try {
             /**
-             * @var array{class: string, args: mixed[]}
+             * @var array{class: ?string, args: ?mixed[]}
              */
             $job = unserialize($message->getBody());
 

@@ -12,10 +12,9 @@ use App\Domain\Sender\Actions\SendFileToHostingAction;
 class SendFileToHostingJob extends AbstractJob implements Job
 {
     public function __construct(
-        private Publisher $publisher,
+        protected Publisher $publisher,
         private SendFileToHostingAction $sendFileToHostingAction,
     ) {
-        parent::__construct($publisher);
     }
 
     public function handle(): void

@@ -2,3 +2,7 @@ parameters:
   level: 4
   paths:
     - src
+  ignoreErrors:
+    - message: '#Property .+? is never written, only read.#'
+      paths:
+        - src/Infrastructure/Persistence/Doctrine*
