@@ -60,6 +60,14 @@
     },
     "scripts": {
         "start": "php -S localhost:8080 -t public",
-        "test": "phpunit --testdox"
+        "test": "phpunit --testdox",
+        "lint-check": "phpcs",
+        "lint-fix": "phpcbf",
+        "stan-analyse": "phpstan analyse",
+        "check": [
+            "@lint-fix",
+            "@stan-analyse",
+            "@test"
+        ]
     }
 }

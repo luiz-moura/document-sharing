@@ -43,10 +43,22 @@ migration-generate:
 migration-diff:
 	$(DOCKER_PHP) php $(DOCTRINE_BIN_PATH) migrations:diff
 
+.PHONY: queue-worker
+queue-worker:
+	$(DOCKER_PHP) php $(WORKER_PATH)
+
 .PHONY: test
 test:
 	$(DOCKER_PHP) composer test
 
-.PHONY: queue-worker
-queue-worker:
-	$(DOCKER_PHP) php $(WORKER_PATH)
+.PHONY: lint-fix
+lint-fix:
+	$(DOCKER_PHP) composer lint-fix
+
+.PHONY: stan-analyse
+stan-analisy:
+	$(DOCKER_PHP) composer stan-analyse
+
+.PHONY: check
+check:
+	$(DOCKER_PHP) composer check
