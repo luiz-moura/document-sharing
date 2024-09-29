@@ -3,15 +3,20 @@
 require __DIR__ . '/../../../../app/bootstrap.php';
 
 use App\Infrastructure\Queue\Contracts\QueueManagerInterface;
+use Faker\Container\ContainerInterface;
 
-/** @var QueueManagerInterface */
+/**
+ * @var ContainerInterface $container
+ */
+
+/** @var QueueManagerInterface $queueManager */
 $queueManager = $container->get(QueueManagerInterface::class);
 
 function gracefulShutdown(QueueManagerInterface $queueManager): never
 {
     echo "Gracefully stopping...\n";
 
-    $queueManager->__destruct();
+    $queueManager->disconnect();
 
     exit(0);
 }

@@ -32,11 +32,11 @@ class DropboxService implements FileSenderService
 
         try {
             /**
-             * @var array{path_display: string, id: string, name: string} $uploadedFile
+             * @var array{path_display: string, id: string, name: string, size: string, path_lower: string} $uploadedFile
              */
             $uploadedFile = $this->client->upload($fileName, $encodedFile->base64, 'add');
             /**
-             * @var array{url: string} $sharedLink
+             * @var array{url: string, name: string, size: string, path_lower: string} $sharedLink
              */
             $sharedLink = $this->client->createSharedLinkWithSettings($uploadedFile['path_display']);
         } catch (Throwable $exception) {

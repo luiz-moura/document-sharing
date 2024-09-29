@@ -7,5 +7,5 @@ use App\Domain\Common\Queue\Contracts\Publisher;
 
 interface QueueManagerInterface extends Publisher, Consumer
 {
-    public function __destruct();
+    public function disconnect();
 }

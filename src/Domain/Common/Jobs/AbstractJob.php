@@ -6,12 +6,9 @@ use App\Domain\Common\Queue\Contracts\Publisher;
 
 abstract class AbstractJob
 {
-    protected mixed $args;
+    protected Publisher $publisher;
 
-    public function __construct(
-        private Publisher $publisher,
-    ) {
-    }
+    protected mixed $args;
 
     abstract public function handle(): void;
 
