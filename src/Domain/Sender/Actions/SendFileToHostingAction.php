@@ -59,15 +59,14 @@ class SendFileToHostingAction
     private function logsFileUploadError(Throwable $ex, SendFileToHostingData $sendFileToHosting): void
     {
         $this->logger->error(
-            sprintf('[%s] Failed to send file to service %s', __METHOD__, $sendFileToHosting->hosting->slug),
+            sprintf('[%s] Failed to send file to service', __METHOD__),
             context: [
                 'exception' => (string) $ex,
-                'file_hosting' => [
-                    'hosted_file_id' => $sendFileToHosting->hostedFileId,
-                    'file_name' => $sendFileToHosting->encodedFile->filename,
-                    'media_type' => $sendFileToHosting->encodedFile->mediaType,
-                    'size' => $sendFileToHosting->encodedFile->size,
-                ],
+                'hosting_slug' => $sendFileToHosting->hosting->slug,
+                'hosted_file_id' => $sendFileToHosting->hostedFileId,
+                'file_name' => $sendFileToHosting->encodedFile->filename,
+                'media_type' => $sendFileToHosting->encodedFile->mediaType,
+                'size' => $sendFileToHosting->encodedFile->size,
             ]
         );
     }

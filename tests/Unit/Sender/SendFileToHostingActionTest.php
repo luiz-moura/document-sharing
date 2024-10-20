@@ -9,6 +9,8 @@ use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileSenderFactory;
 use App\Domain\Sender\Contracts\FileSenderService;
 use App\Domain\Sender\DTOs\UpdateAccessLinkHostedFileData;
+use App\Domain\Sender\Enums\FileStatusEnum;
+use App\Domain\Sender\Exceptions\FailedToUploadFileToHostingException;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Tests\Utils\Mocks\Sender\HostedFileDataFactory;
@@ -41,7 +43,7 @@ class SendFileToHostingActionTest extends TestCase
         );
     }
 
-    public function testShouldUploadTheFileToTheHostingSuccessfully()
+    public function testShouldUploadTheFileToTheHostingSuccessfully(): void
     {
         $sendFileToHosting = SendFileToHostingDataFactory::create();
 
@@ -52,17 +54,22 @@ class SendFileToHostingActionTest extends TestCase
             webContentLink: $hostedFile->webContentLink,
         );
 
-        $this->fileSenderService
+        $this->hostedFileRepository
             ->expects($this->once())
-            ->method('send')
-            ->with($sendFileToHosting->uploadedFile)
-            ->willReturn($hostedFile);
+            ->method('updateStatus')
+            ->with($sendFileToHosting->hostedFileId, FileStatusEnum::PROCESSING);
 
         $this->fileSenderFactory
             ->expects($this->once())
             ->method('create')
             ->with($sendFileToHosting->hosting->slug)
             ->willReturn($this->fileSenderService);
+
+        $this->fileSenderService
+            ->expects($this->once())
+            ->method('send')
+            ->with($sendFileToHosting->encodedFile)
+            ->willReturn($hostedFile);
 
         $this->hostedFileRepository
             ->expects($this->once())
@@ -71,6 +78,41 @@ class SendFileToHostingActionTest extends TestCase
                 $sendFileToHosting->hostedFileId,
                 $updateAccessLinkHostedFile
             );
+
+        $this->sut->__invoke($sendFileToHosting);
+    }
+
+    public function testShouldFailWhenUploadTheFileToTheHosting(): void
+    {
+        $sendFileToHosting = SendFileToHostingDataFactory::create();
+
+        $this->hostedFileRepository
+            ->expects($this->exactly(2))
+            ->method('updateStatus')
+            ->with(
+                $sendFileToHosting->hostedFileId,
+                $this->logicalOr(
+                    FileStatusEnum::PROCESSING,
+                    FileStatusEnum::SEND_FAILURE
+                )
+            );
+
+        $this->fileSenderFactory
+            ->expects($this->once())
+            ->method('create')
+            ->with($sendFileToHosting->hosting->slug)
+            ->willReturn($this->fileSenderService);
+
+        $this->fileSenderService
+            ->expects($this->once())
+            ->method('send')
+            ->with($sendFileToHosting->encodedFile)
+            ->willThrowException(new \Exception('Failed to upload the file'));
+
+        $this->logger->expects($this->once())->method('error');
+
+        $this->expectException(FailedToUploadFileToHostingException::class);
+        $this->expectExceptionMessage('Failed to upload file to hosting.');
 
         $this->sut->__invoke($sendFileToHosting);
     }
