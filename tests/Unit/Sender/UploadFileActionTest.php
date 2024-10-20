@@ -5,19 +5,21 @@ declare(strict_types=1);
 namespace Tests\Unit\Sender;
 
 use App\Domain\Common\Uuid\Contracts\UuidGeneratorService;
-use App\Domain\Sender\Actions\SendFileToHostingAction;
 use App\Domain\Sender\Actions\UploadFileAction;
 use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\CreateHostedFileData;
+use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\DTOs\UploadRequestData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
 use App\Domain\Sender\Exceptions\InvalidFileException;
+use App\Domain\Sender\Jobs\SendFileToHostingJob;
 use Faker\Generator;
 use PHPUnit\Framework\TestCase;
+use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Tests\Utils\Mocks\Sender\CreateFileDataFactory;
 use Tests\Utils\Mocks\Sender\UploadedFileFactory;
@@ -30,7 +32,7 @@ class UploadFileActionTest extends TestCase
     private $fileRepository;
     private $hostedFileRepository;
     private $hostingRepository;
-    private $sendFileToHostingAction;
+    private $sendFileToHostingJob;
     private $uuidGeneratorService;
     private UploadFileAction $sut;
 
@@ -46,8 +48,8 @@ class UploadFileActionTest extends TestCase
         $this->hostedFileRepository = $this->createMock(HostedFileRepository::class);
         /** @var HostingRepository */
         $this->hostingRepository = $this->createMock(HostingRepository::class);
-        /** @var SendFileToHostingAction */
-        $this->sendFileToHostingAction = $this->createMock(SendFileToHostingAction::class);
+        /** @var SendFileToHostingJob */
+        $this->sendFileToHostingJob = $this->createMock(SendFileToHostingJob::class);
         /** @var UuidGeneratorService */
         $this->uuidGeneratorService = $this->createMock(UuidGeneratorService::class);
 
@@ -55,12 +57,12 @@ class UploadFileActionTest extends TestCase
             $this->fileRepository,
             $this->hostedFileRepository,
             $this->hostingRepository,
-            $this->sendFileToHostingAction,
+            $this->sendFileToHostingJob,
             $this->uuidGeneratorService,
         );
     }
 
-    public function testShouldFailWhenTheFileIsInError()
+    public function testShouldFailWhenTheFileIsInError(): void
     {
         $hostingSlug = [$this->faker->randomDigitNotZero(), $this->faker->slug(1)];
         $uploadedFile = UploadedFileFactory::create(['error' => UPLOAD_ERR_CANT_WRITE]);
@@ -81,9 +83,9 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('create');
 
-        $this->sendFileToHostingAction
+        $this->sendFileToHostingJob
             ->expects($this->never())
-            ->method('__invoke');
+            ->method('dispatch');
 
         $this->expectException(InvalidFileException::class);
         $this->expectExceptionMessage('Failed to write file to disk.');
@@ -96,7 +98,7 @@ class UploadFileActionTest extends TestCase
         );
     }
 
-    public function testShouldFailWhenOneOrMoreHostingIsNotFound()
+    public function testShouldFailWhenOneOrMoreHostingIsNotFound(): void
     {
         $hostingSlugs = [$this->faker->slug(1), $this->faker->slug(1)];
         /** @var UploadedFileInterface */
@@ -120,9 +122,9 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('create');
 
-        $this->sendFileToHostingAction
+        $this->sendFileToHostingJob
             ->expects($this->never())
-            ->method('__invoke');
+            ->method('dispatch');
 
         $this->expectException(HostingNotFoundException::class);
 
@@ -134,17 +136,42 @@ class UploadFileActionTest extends TestCase
         );
     }
 
-    public function testShouldUploadTheFileSuccessfully()
+    public function testShouldUploadTheFileSuccessfully(): void
     {
         $fileId = $this->faker->randomDigitNotZero();
-        $uploadedFile = UploadedFileFactory::create();
-        $createFile = CreateFileDataFactory::fromUploadedFile($uploadedFile);
 
         $hostingSlugs = [$this->faker->slug(1), $this->faker->slug(1)];
         $googleDriveHosting = new HostingData(1, 'Google Drive', 'google-drive');
         $dropboxHosting = new HostingData(2, 'Dropbox', 'dropbox');
 
         $hostedFileIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];
+        $uploadedFile = UploadedFileFactory::create();
+        $createFile = CreateFileDataFactory::fromUploadedFile($uploadedFile);
+
+        $streamContent = 'any';
+
+        $stream = $this->createMock(StreamInterface::class);
+        $stream->expects($this->exactly(2))
+            ->method('__toString')
+            ->willReturn($streamContent);
+
+        $uploadFile = $this->createMock(UploadedFileInterface::class);
+
+        $uploadFile->expects($this->exactly(3))
+            ->method('getClientFilename')
+            ->willReturn($uploadedFile->getClientFilename());
+
+        $uploadFile->expects($this->exactly(3))
+            ->method('getClientMediaType')
+            ->willReturn($uploadedFile->getClientMediaType());
+
+        $uploadFile->expects($this->exactly(3))
+            ->method('getSize')
+            ->willReturn($uploadedFile->getSize());
+
+        $uploadFile->expects($this->exactly(2))
+            ->method('getStream')
+            ->willReturn($stream);
 
         $this->hostingRepository
             ->expects($this->once())
@@ -182,28 +209,42 @@ class UploadFileActionTest extends TestCase
                 $hostedFileIds[1]
             );
 
-        $this->sendFileToHostingAction
+        $this->sendFileToHostingJob
             ->expects($this->exactly(2))
-            ->method('__invoke')
+            ->method('setArgs')
             ->with(
                 $this->logicalOr(
                     new SendFileToHostingData(
-                        $hostedFileIds[0],
                         $googleDriveHosting,
-                        $uploadedFile,
+                        $hostedFileIds[0],
+                        new EncodedFileData(
+                            filename: $uploadedFile->getClientFilename(),
+                            mediaType: $uploadedFile->getClientMediaType(),
+                            size: $uploadedFile->getSize(),
+                            base64: $streamContent,
+                        ),
                     ),
                     new SendFileToHostingData(
-                        $hostedFileIds[1],
                         $dropboxHosting,
-                        $uploadedFile,
+                        $hostedFileIds[1],
+                        new EncodedFileData(
+                            filename: $uploadedFile->getClientFilename(),
+                            mediaType: $uploadedFile->getClientMediaType(),
+                            size: $uploadedFile->getSize(),
+                            base64: $streamContent,
+                        ),
                     ),
                 )
-            );
+            )->willReturnSelf();
+
+        $this->sendFileToHostingJob
+            ->expects($this->exactly(2))
+            ->method('dispatch');
 
         $this->sut->__invoke(
             new UploadRequestData(
                 $hostingSlugs,
-                $uploadedFile
+                $uploadFile
             )
         );
     }

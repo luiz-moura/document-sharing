@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Utils\Mocks\Sender;
 
+use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use Tests\Utils\Mocks\MockFactory;
@@ -30,7 +31,12 @@ class SendFileToHostingDataFactory extends MockFactory
                 name: $faker->monthName(),
                 slug: $faker->slug(),
             ),
-            'uploadedFile' => UploadedFileFactory::create(),
+            'encodedFile' => new EncodedFileData(
+                filename: $faker->word(),
+                mediaType: $faker->mimeType(),
+                size: $faker->randomNumber(),
+                base64: $faker->sha256(),
+            ),
         ];
     }
 }

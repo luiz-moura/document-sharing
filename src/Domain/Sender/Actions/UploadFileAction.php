@@ -63,7 +63,7 @@ class UploadFileAction
                         filename: $uploadFile->getClientFilename(),
                         mediaType: $uploadFile->getClientMediaType(),
                         size:  $uploadFile->getSize(),
-                        base64: file_get_contents($uploadFile->getStream()->getMetadata('uri')),
+                        base64:$uploadFile->getStream()->__toString(),
                     )
                 )
             )->dispatch();
