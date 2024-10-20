@@ -1,6 +1,7 @@
 {
     "name": "slim/slim-skeleton",
     "description": "A Slim Framework skeleton application for rapid development",
+    "version": "4.0.0",
     "keywords": [
         "microframework",
         "rest",
@@ -65,7 +66,7 @@
         "lint-fix": "phpcbf",
         "stan-analyse": "phpstan analyse",
         "check": [
-            "@lint-fix",
+            "@lint-check",
             "@stan-analyse",
             "@test"
         ]

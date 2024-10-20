@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require __DIR__ . '/../../../../app/bootstrap.php';
 
 use App\Infrastructure\Queue\Contracts\QueueManagerInterface;
@@ -12,15 +14,12 @@ use Faker\Container\ContainerInterface;
 /** @var QueueManagerInterface $queueManager */
 $queueManager = $container->get(QueueManagerInterface::class);
 
-function gracefulShutdown(QueueManagerInterface $queueManager): never
-{
+pcntl_signal(SIGINT, function (QueueManagerInterface $queueManager): never {
     echo "Gracefully stopping...\n";
 
     $queueManager->disconnect();
 
     exit(0);
-}
-
-pcntl_signal(SIGINT, fn () => gracefulShutdown($queueManager));
+});
 
 $queueManager->consume('app');
