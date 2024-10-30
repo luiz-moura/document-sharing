@@ -14,7 +14,7 @@ use Faker\Container\ContainerInterface;
 /** @var QueueManagerInterface $queueManager */
 $queueManager = $container->get(QueueManagerInterface::class);
 
-pcntl_signal(SIGINT, function (QueueManagerInterface $queueManager): never {
+pcntl_signal(SIGINT, function () use ($queueManager): never {
     echo "Gracefully stopping...\n";
 
     $queueManager->disconnect();
