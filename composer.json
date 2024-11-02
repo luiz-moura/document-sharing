@@ -48,7 +48,7 @@
             "App\\": "src/"
         },
         "files": [
-            "src/Domain/Common/helpers.php"
+            "src/Domain/Common/Helpers/helpers.php"
         ]
     },
     "autoload-dev": {
