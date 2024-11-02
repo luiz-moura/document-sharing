@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Common\DTOs;
 
-use App\Domain\Common\Validators\Validator;
+use App\Domain\Common\Validators\AttributeValidator;
 
 abstract class AbstractDataTransferObject
 {
@@ -15,7 +15,7 @@ abstract class AbstractDataTransferObject
 
     private function validate(): void
     {
-        $validator = new Validator();
+        $validator = new AttributeValidator();
         $validator->validate($this);
     }
 }
