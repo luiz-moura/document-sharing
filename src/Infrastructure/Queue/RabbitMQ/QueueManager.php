@@ -8,8 +8,9 @@ use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 use Psr\Log\LoggerInterface;
 use App\Infrastructure\Queue\Contracts\QueueManagerInterface;
-use Psr\Container\ContainerInterface;
+use DI\Container;
 use RuntimeException;
+use Src\Domain\Common\Queue\Exceptions\InvalidJobException;
 use Throwable;
 
 class QueueManager implements QueueManagerInterface
@@ -21,7 +22,7 @@ class QueueManager implements QueueManagerInterface
         int $maxRetries,
         int $retryDelaySeconds,
         private LoggerInterface $logger,
-        private ContainerInterface $container,
+        private Container $container,
     ) {
         $this->connect($maxRetries, $retryDelaySeconds);
     }
@@ -48,11 +49,11 @@ class QueueManager implements QueueManagerInterface
             ]);
 
             throw $exception;
-        } finally {
-            $this->logger->info(sprintf('[%s] Message published successfully.', __METHOD__), [
-                'queue' => $queue,
-            ]);
         }
+
+        $this->logger->info(sprintf('[%s] Message published successfully.', __METHOD__), [
+            'queue' => $queue,
+        ]);
     }
 
     public function consume(string $queue): void
@@ -82,16 +83,6 @@ class QueueManager implements QueueManagerInterface
         }
     }
 
-    public function disconnect(): void
-    {
-        if (isset($this->channel)) {
-            $this->channel->close();
-        }
-        if (isset($this->connection)) {
-            $this->connection->close();
-        }
-    }
-
     /**
      * @throws Throwable
      */
@@ -118,28 +109,52 @@ class QueueManager implements QueueManagerInterface
         }
     }
 
+    /**
+     * @throws RuntimeException
+     */
     private function callback(AMQPMessage $message): void
     {
+        /** @var Job|mixed $job */
+        $job = unserialize($message->getBody());
+
+        if (! $job instanceof Job) {
+            throw new InvalidJobException();
+        }
+
+        $this->container->injectOn($job);
+
+        $jobClass = get_class($job);
+
+        $this->logger->info(sprintf('[%s] Processing message.' . PHP_EOL, $jobClass));
+
         try {
-            /**
-             * @var array{class: ?string, args: ?mixed[]}
-             */
-            $job = unserialize($message->getBody());
-
-            $this->logger->info(sprintf('[%s] Processing message.' . PHP_EOL, $job['class'] ?? __METHOD__));
-
-            /** @var Job */
-            $jobInstance = $this->container->get($job['class']);
-            $jobInstance->setArgs(...$job['args'])->handle();
+            $job->handle();
 
             $message->ack();
 
-            $this->logger->info(sprintf('[%s] Message processed.' . PHP_EOL, $job['class'] ?? __METHOD__));
+            $this->logger->info(sprintf('[%s] Message processed.' . PHP_EOL, $jobClass));
         } catch (Throwable $exception) {
-            $message->nack();
+            $job->incrementAttempts();
+            $job->incrementAttempts();
 
-            $this->logger->error(sprintf('[%s] Failed to process message.' . PHP_EOL, $job['class'] ?? __METHOD__), [
+            if ($job->shouldRetry()) {
+                $message->nack(requeue: false);
+
+                $this->publish($job, $job->getQueue());
+
+                $this->logger->error(sprintf('[%s] Failed to process message. Retrying...', $jobClass), [
+                    'ex' => (string) $exception,
+                    'attempts' => $job->getAttempts(),
+                ]);
+
+                return;
+            }
+
+            $message->nack(requeue: false);
+
+            $this->logger->error(sprintf('[%s] Failed to process message.' . PHP_EOL, $jobClass), [
                 'ex' => (string) $exception,
+                'attempts' => $job->getAttempts(),
             ]);
         }
     }
@@ -172,6 +187,16 @@ class QueueManager implements QueueManagerInterface
 
         if (!isset($this->connection) || !isset($this->channel)) {
             throw new RuntimeException('Failed to connect to RabbitMQ.');
+        }
+    }
+
+    public function disconnect(): void
+    {
+        if (isset($this->channel)) {
+            $this->channel->close();
+        }
+        if (isset($this->connection)) {
+            $this->connection->close();
         }
     }
 }
