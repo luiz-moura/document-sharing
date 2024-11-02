@@ -16,10 +16,33 @@ class InMemoryHostingRepository implements HostingRepository
         return array_map(
             fn (string $slug): HostingData => new HostingData(
                 id: $i++,
-                name: 'in Memory',
                 slug: $slug,
+                name: 'in Memory',
+                refreshableToken: 'refreshableToken',
+                accessToken: 'accessToken',
             ),
             $slugs
         );
+    }
+
+    public function findBySlug(string $slug): ?HostingData
+    {
+        return new HostingData(
+            id: 1,
+            slug: $slug,
+            name: 'in Memory',
+            refreshableToken: 'refreshableToken',
+            accessToken: 'accessToken',
+        );
+    }
+
+    public function updateRefreshableTokenBySlug(string $slug, string $codeAccess): void
+    {
+        // do nothing
+    }
+
+    public function updateAccessTokenBySlug(string $slug, string $codeAccess): void
+    {
+        // do nothing
     }
 }

@@ -2,7 +2,9 @@
 
 namespace App\Infrastructure\Integrations\Hosting\Dropbox;
 
+use App\Domain\Sender\Contracts\HostingRepository;
 use App\Infrastructure\Integrations\Hosting\Dropbox\Exceptions\AccessTokenNotDefinedException;
+use App\Infrastructure\Integrations\Hosting\Enums\HostingEnum;
 use GuzzleHttp\Client as GuzzleClient;
 use Psr\Log\LoggerInterface;
 use Spatie\Dropbox\TokenProvider;
@@ -19,6 +21,7 @@ class DropboxTokenProvider implements TokenProvider
         protected string $clientSecret,
         protected string $accessCode,
         protected LoggerInterface $logger,
+        protected HostingRepository $hostingRepository
     ) {
         $this->guzzleClient = new GuzzleClient([
             'base_uri' => 'https://api.dropboxapi.com',
@@ -31,11 +34,13 @@ class DropboxTokenProvider implements TokenProvider
      */
     public function getToken(): string
     {
-        if (! $this->accessToken &&  ! $this->generateToken()) {
+        $accessToken = $this->hostingRepository->findBySlug(HostingEnum::DROPBOX->value)->accessToken;
+
+        if (! $accessToken && ! $this->generateToken()) {
             throw new AccessTokenNotDefinedException();
         }
 
-        return $this->accessToken;
+        return $accessToken;
     }
 
     private function generateToken(): bool
@@ -57,8 +62,9 @@ class DropboxTokenProvider implements TokenProvider
              */
             $body = json_decode($response->getBody()->getContents(), true);
 
-            $this->accessToken = $body['access_token'];
-            $this->refreshToken = $body['refresh_token'];
+            // TODO: cache access token
+            $this->hostingRepository->updateAccessTokenBySlug(HostingEnum::DROPBOX->value, $body['access_token']);
+            $this->hostingRepository->updateRefreshableTokenBySlug(HostingEnum::DROPBOX->value, $body['refresh_token']);
 
             $this->logger->info(sprintf('[%s] New token has been generated', __METHOD__));
 

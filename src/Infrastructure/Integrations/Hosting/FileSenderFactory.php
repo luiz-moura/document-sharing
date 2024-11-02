@@ -8,6 +8,7 @@ use App\Domain\Sender\Contracts\FileSenderFactory as FileSenderFactoryContract;
 use App\Domain\Sender\Contracts\FileSenderService;
 use App\Infrastructure\Integrations\Hosting\Dropbox\DropboxService;
 use App\Infrastructure\Integrations\Hosting\InMemory\InMemoryFileSenderService;
+use App\Infrastructure\Integrations\Hosting\Enums\HostingEnum;
 use Exception;
 use Psr\Container\ContainerInterface;
 
@@ -20,10 +21,15 @@ class FileSenderFactory implements FileSenderFactoryContract
 
     public function create(string $type): FileSenderService
     {
-        return match ($type) {
-            'in-memory' => new InMemoryFileSenderService(),
-            'dropbox' => $this->container->get(DropboxService::class),
-            default => throw new Exception(sprintf('Unsupported file sender type: %s', $type)),
+        $hosting = HostingEnum::tryFrom($type);
+
+        if (! $hosting) {
+            throw new Exception(sprintf('Unsupported file sender type: %s', $type));
+        }
+
+        return match ($hosting) {
+            HostingEnum::IN_MEMORY => new InMemoryFileSenderService(),
+            HostingEnum::DROPBOX => $this->container->get(DropboxService::class),
         };
     }
 }
