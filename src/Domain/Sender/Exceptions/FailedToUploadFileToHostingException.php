@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace App\Domain\Sender\Exceptions;
 
 use Exception;
-use Throwable;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
+use Throwable;
 
-class FailedToUploadFileToHostingException extends Exception implements Throwable
+class FailedToUploadFileToHostingException extends Exception
 {
     public function __construct(Throwable $previous = null)
     {
