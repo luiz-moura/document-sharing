@@ -5,12 +5,19 @@ declare(strict_types=1);
 namespace App\Domain\Sender\Exceptions;
 
 use Exception;
-use Throwable;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
 
-class InvalidFileException extends Exception implements Throwable
+class InvalidFileException extends Exception
 {
     public function __construct(int $fileUploadErrorCode)
+    {
+        parent::__construct(
+            $this->getMessageByCode($fileUploadErrorCode),
+            code: StatusCode::STATUS_BAD_REQUEST
+        );
+    }
+
+    private function getMessageByCode(int $fileUploadErrorCode): string
     {
         $messages = [
             UPLOAD_ERR_INI_SIZE  => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',
@@ -22,9 +29,6 @@ class InvalidFileException extends Exception implements Throwable
             UPLOAD_ERR_EXTENSION => 'A PHP extension stopped the file upload.',
         ];
 
-        parent::__construct(
-            $messages[$fileUploadErrorCode],
-            code: StatusCode::STATUS_BAD_REQUEST
-        );
+        return $messages[$fileUploadErrorCode];
     }
 }
