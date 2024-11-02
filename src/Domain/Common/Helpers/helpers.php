@@ -6,7 +6,7 @@ if (! function_exists('config')) {
         $keys = explode('.', $key);
         $filename = array_shift($keys);
 
-        $config = require __DIR__ . "/../../../config/{$filename}.php";
+        $config = require __DIR__ . "/../../../../config/{$filename}.php";
 
         if (!$keys) {
             return $config;
