@@ -2,30 +2,84 @@
 
 namespace App\Domain\Common\Jobs;
 
+use App\Domain\Common\Jobs\Contracts\Dispatchable;
+use App\Domain\Common\Jobs\Contracts\Job;
 use App\Domain\Common\Queue\Contracts\Publisher;
+use DI\Attribute\Inject;
 
-abstract class AbstractJob
+abstract class AbstractJob implements Job, Dispatchable
 {
-    protected Publisher $publisher;
+    #[Inject]
+    private Publisher $publisher;
 
-    protected mixed $args;
+    private string $queue = 'app';
 
-    abstract public function handle(): void;
+    protected int $maxRetries = 3;
 
-    public function setArgs(mixed ...$args): static
+    protected int $retryDelaySeconds = 5;
+
+    protected array $args;
+
+    protected int $attempts = 0;
+
+    public function setArgs(mixed ...$args): self
     {
         $this->args = $args;
 
         return $this;
     }
 
+    public function setQueue(string $queue): self
+    {
+        $this->queue = $queue;
+
+        return $this;
+    }
+
+    public function getQueue(): string
+    {
+        return $this->queue;
+    }
+
+    abstract public function handle(): void;
+
     public function dispatch(): void
     {
-        $job = [
-            'class' => static::class,
-            'args' => $this->args,
-        ];
+        $this->publisher->publish($this, $this->queue);
+    }
 
-        $this->publisher->publish($job, 'app');
+    public function getAttempts(): int
+    {
+        return $this->attempts;
+    }
+
+    public function incrementAttempts(): void
+    {
+        $this->attempts++;
+    }
+
+    public function shouldRetry(): bool
+    {
+        return $this->attempts < $this->maxRetries;
+    }
+
+    public function __serialize(): array
+    {
+        return [
+            'queue' => $this->queue,
+            'maxRetries' => $this->maxRetries,
+            'retryDelaySeconds' => $this->retryDelaySeconds,
+            'args' => $this->args,
+            'attempts' => $this->attempts,
+        ];
+    }
+
+    public function __unserialize(array $serialized): void
+    {
+        $this->queue = $serialized['queue'];
+        $this->maxRetries = $serialized['maxRetries'];
+        $this->retryDelaySeconds = $serialized['retryDelaySeconds'];
+        $this->args = $serialized['args'];
+        $this->attempts = $serialized['attempts'];
     }
 }

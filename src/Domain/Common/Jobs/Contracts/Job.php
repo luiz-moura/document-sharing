@@ -6,7 +6,10 @@ namespace App\Domain\Common\Jobs\Contracts;
 
 interface Job
 {
-    public function setArgs(mixed ...$args): static;
     public function handle(): void;
-    public function dispatch(): void;
+    public function setArgs(mixed ...$args): self;
+    public function getAttempts(): int;
+    public function getQueue(): string;
+    public function incrementAttempts(): void;
+    public function shouldRetry(): bool;
 }

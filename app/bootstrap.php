@@ -9,6 +9,7 @@ require __DIR__ . '/../vendor/autoload.php';
 
 // Instantiate PHP-DI ContainerBuilder
 $containerBuilder = new ContainerBuilder();
+$containerBuilder->useAttributes(true);
 
 // Set up env
 $dotenv = new Dotenv();
