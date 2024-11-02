@@ -15,7 +15,7 @@
         "doctrine/dbal": "^4.1",
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/migrations": "^3.8",
-        "doctrine/orm": "^3.2",
+        "doctrine/orm": "^3.3",
         "fakerphp/faker": "^1.23",
         "fig/http-message-util": "^1.1",
         "monolog/monolog": "^2.8",
