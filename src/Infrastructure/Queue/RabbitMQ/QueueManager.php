@@ -135,7 +135,6 @@ class QueueManager implements QueueManagerInterface
             $this->logger->info(sprintf('[%s] Message processed.' . PHP_EOL, $jobClass));
         } catch (Throwable $exception) {
             $job->incrementAttempts();
-            $job->incrementAttempts();
 
             if ($job->shouldRetry()) {
                 $message->nack(requeue: false);
