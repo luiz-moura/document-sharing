@@ -10,6 +10,7 @@ use DI\Attribute\Inject;
 abstract class AbstractJob implements Job, Dispatchable
 {
     #[Inject]
+    /** @phpstan-ignore-next-line */
     private Publisher $publisher;
 
     private string $queue = 'app';

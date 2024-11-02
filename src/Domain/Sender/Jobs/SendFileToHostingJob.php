@@ -11,6 +11,7 @@ use DI\Attribute\Inject;
 class SendFileToHostingJob extends AbstractJob
 {
     #[Inject]
+    /** @phpstan-ignore-next-line */
     private SendFileToHostingAction $sendFileToHostingAction;
 
     public function handle(): void
