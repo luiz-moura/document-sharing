@@ -141,7 +141,7 @@ class UploadFileActionTest extends TestCase
         $fileId = $this->faker->randomDigitNotZero();
 
         $hostingSlugs = [$this->faker->slug(1), $this->faker->slug(1)];
-        $googleDriveHosting = new HostingData(1, 'Google Drive', 'google-drive');
+        $googleDriveHosting = new HostingData(1, 'google-drive', 'Google Drive');
         $dropboxHosting = new HostingData(2, 'Dropbox', 'dropbox');
 
         $hostedFileIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];

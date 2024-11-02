@@ -26,6 +26,20 @@ class HostingEntity
     private string $slug;
 
     #[ORM\Column(
+        name: 'access_token',
+        type: 'string',
+        nullable: true,
+    )]
+    private ?string $accessToken = null;
+
+    #[ORM\Column(
+        name: 'refreshable_token',
+        type: 'string',
+        nullable: true,
+    )]
+    private ?string $refreshableToken = null;
+
+    #[ORM\Column(
         name: 'created_at',
         type: 'datetimetz_immutable',
         insertable: false,
@@ -55,6 +69,26 @@ class HostingEntity
     public function getSlug(): string
     {
         return $this->slug;
+    }
+
+    public function getRefreshableToken(): ?string
+    {
+        return $this->refreshableToken;
+    }
+
+    public function setRefreshableToken(string $refreshableToken): void
+    {
+        $this->refreshableToken = $refreshableToken;
+    }
+
+    public function getAccessToken(): ?string
+    {
+        return $this->accessToken;
+    }
+
+    public function setAccessToken(string $accessToken): void
+    {
+        $this->accessToken = $accessToken;
     }
 
     public function getCreatedAt(): DateTimeImmutable

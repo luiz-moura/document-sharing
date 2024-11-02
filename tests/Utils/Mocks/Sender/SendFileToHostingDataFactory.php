@@ -28,8 +28,8 @@ class SendFileToHostingDataFactory extends MockFactory
             'hostedFileId' => $faker->randomDigitNotZero(),
             'hosting' => new HostingData(
                 id: $faker->randomDigitNotZero(),
-                name: $faker->monthName(),
                 slug: $faker->slug(),
+                name: $faker->monthName(),
             ),
             'encodedFile' => new EncodedFileData(
                 filename: $faker->word(),

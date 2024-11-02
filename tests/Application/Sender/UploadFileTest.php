@@ -166,7 +166,7 @@ class UploadFileTest extends TestCase
     {
         $fileId = $this->faker->randomDigitNotZero();
         $hostingSlugs = [$this->faker->randomDigitNotZero()];
-        $googleDriveHosting = new HostingData($hostingSlugs[0], 'Google Drive', 'google-drive');
+        $googleDriveHosting = new HostingData($hostingSlugs[0], 'google-drive', 'Google Drive');
         $hostedFileId = $this->faker->randomDigitNotZero();
 
         $uploadedFile = UploadedFileFactory::create();

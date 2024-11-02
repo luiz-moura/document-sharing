@@ -5,6 +5,7 @@ namespace App\Infrastructure\Integrations\Hosting\Dropbox;
 use Fig\Http\Message\StatusCodeInterface as Status;
 use GuzzleHttp\Exception\ClientException;
 use Spatie\Dropbox\RefreshableTokenProvider;
+use App\Infrastructure\Integrations\Hosting\Enums\HostingEnum;
 use Throwable;
 
 class DropboxRefreshableTokenProvider extends DropboxTokenProvider implements RefreshableTokenProvider
@@ -21,11 +22,13 @@ class DropboxRefreshableTokenProvider extends DropboxTokenProvider implements Re
             return false;
         }
 
+        $hosting = $this->hostingRepository->findBySlug(HostingEnum::DROPBOX->value);
+
         try {
             $response = $this->guzzleClient->post('oauth2/token', [
                 'form_params' => [
                     'grant_type' => 'refresh_token',
-                    'refresh_token' => $this->refreshToken,
+                    'refresh_token' => $hosting->refreshableToken,
                     'client_id' => $this->clientId,
                     'client_secret' => $this->clientSecret,
                 ],
@@ -36,7 +39,7 @@ class DropboxRefreshableTokenProvider extends DropboxTokenProvider implements Re
              */
             $body = json_decode($response->getBody()->getContents(), true);
 
-            $this->accessToken = $body['access_token'];
+            $this->hostingRepository->updateAccessTokenBySlug(HostingEnum::DROPBOX->value, $body['access_token']);
 
             $this->logger->info(sprintf('[%s] Token has been refreshed', __METHOD__));
 

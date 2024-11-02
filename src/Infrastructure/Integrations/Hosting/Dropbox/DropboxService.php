@@ -3,6 +3,7 @@
 namespace App\Infrastructure\Integrations\Hosting\Dropbox;
 
 use App\Domain\Sender\Contracts\FileSenderService;
+use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostedFileData;
 use Psr\Log\LoggerInterface;
@@ -14,13 +15,20 @@ class DropboxService implements FileSenderService
     private DropboxClient $client;
 
     public function __construct(
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private HostingRepository $hostingRepository
     ) {
         $appKey = config('dropbox.app_key');
         $appSecret = config('dropbox.app_secret');
         $accessCode = config('dropbox.access_code');
 
-        $tokenProvider = new DropboxRefreshableTokenProvider($appKey, $appSecret, $accessCode, $this->logger);
+        $tokenProvider = new DropboxRefreshableTokenProvider(
+            $appKey,
+            $appSecret,
+            $accessCode,
+            $this->logger,
+            $this->hostingRepository
+        );
         $this->client = new DropboxClient($tokenProvider);
     }
 
