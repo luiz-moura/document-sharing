@@ -17,6 +17,7 @@ use App\Domain\Sender\Jobs\SendFileToHostingJob;
 use DI\Container;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
 use Faker\Generator;
+use Prophecy\Prophecy\ObjectProphecy;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
 use Slim\App;
@@ -32,11 +33,11 @@ class UploadFileTest extends TestCase
     private App $app;
     private Container $container;
     private Generator $faker;
-    private $fileRepositoryProphecy;
-    private $hostedFileRepositoryProphecy;
-    private $hostingRepositoryProphecy;
-    private $sendFileToHostingJob;
-    private $uuidGeneratorService;
+    private ObjectProphecy $fileRepositoryProphecy;
+    private ObjectProphecy $hostedFileRepositoryProphecy;
+    private ObjectProphecy $hostingRepositoryProphecy;
+    private ObjectProphecy $sendFileToHostingJob;
+    private ObjectProphecy $uuidGeneratorService;
 
     protected function setup(): void
     {
@@ -124,7 +125,7 @@ class UploadFileTest extends TestCase
         $this->assertEquals($responseBody->error->description, 'hostingSlugs cant be blank');
     }
 
-    public function testShouldFailWhenTheFileIsInError()
+    public function testShouldFailWhenTheFileIsInError(): void
     {
         $callableResolver = $this->app->getCallableResolver();
         $responseFactory = $this->app->getResponseFactory();
@@ -164,38 +165,40 @@ class UploadFileTest extends TestCase
 
     public function testShouldUploadTheFileSuccessfully(): void
     {
-        $fileId = $this->faker->randomDigitNotZero();
-        $hostingSlugs = [$this->faker->randomDigitNotZero()];
-        $googleDriveHosting = new HostingData($hostingSlugs[0], 'google-drive', 'Google Drive');
-        $hostedFileId = $this->faker->randomDigitNotZero();
-
-        $uploadedFile = UploadedFileFactory::create();
-        $createdFile = CreateFileDataFactory::fromUploadedFile($uploadedFile);
-
+        $fileSize = 5 * 1024 * 1024; // 5MB
+        $fileType = 'image/jpeg';
+        $fileName = $this->faker->filePath() . '.' . $this->faker->fileExtension();
         $streamContent = 'any';
 
         $stream = $this->createMock(StreamInterface::class);
-        $stream->expects($this->exactly(1))
+        $stream->expects($this->exactly(2))
             ->method('__toString')
             ->willReturn($streamContent);
 
-        $uploadFile = $this->createMock(UploadedFileInterface::class);
-
-        $uploadFile->expects($this->exactly(2))
+        $uploadedFile = $this->createMock(UploadedFileInterface::class);
+        $uploadedFile->expects($this->exactly(2))
             ->method('getClientFilename')
-            ->willReturn($uploadedFile->getClientFilename());
-
-        $uploadFile->expects($this->exactly(2))
+            ->willReturn($fileName);
+        $uploadedFile->expects($this->exactly(3))
             ->method('getClientMediaType')
-            ->willReturn($uploadedFile->getClientMediaType());
-
-        $uploadFile->expects($this->exactly(2))
+            ->willReturn($fileType);
+        $uploadedFile->expects($this->exactly(3))
             ->method('getSize')
-            ->willReturn($uploadedFile->getSize());
-
-        $uploadFile->expects($this->exactly(1))
+            ->willReturn($fileSize);
+        $uploadedFile->expects($this->exactly(2))
             ->method('getStream')
             ->willReturn($stream);
+
+        $createFile = CreateFileDataFactory::create([
+            'name' => $fileName,
+            'size' => $fileSize,
+            'mimeType' => $fileType,
+        ]);
+
+        $fileId = $this->faker->randomDigitNotZero();
+        $hostingSlugs = ['google-drive'];
+        $googleDriveHosting = new HostingData($this->faker->randomDigitNotZero(), $hostingSlugs[0], 'Google Drive');
+        $hostedFileId = $this->faker->randomDigitNotZero();
 
         $this->hostingRepositoryProphecy
             ->queryBySlugs($hostingSlugs)
@@ -204,11 +207,11 @@ class UploadFileTest extends TestCase
 
         $this->uuidGeneratorService
             ->generateUuid()
-            ->willReturn($createdFile->uuid)
+            ->willReturn($createFile->uuid)
             ->shouldBeCalledOnce();
 
         $this->fileRepositoryProphecy
-            ->create($createdFile)
+            ->create($createFile)
             ->willReturn($fileId)
             ->shouldBeCalledOnce();
 
@@ -216,7 +219,7 @@ class UploadFileTest extends TestCase
             ->create(
                 new CreateHostedFileData(
                     fileId: $fileId,
-                    hosting: $googleDriveHosting
+                    hostingId: $googleDriveHosting->id
                 ),
             )
             ->willReturn($hostedFileId)
@@ -228,9 +231,9 @@ class UploadFileTest extends TestCase
                     $googleDriveHosting,
                     $hostedFileId,
                     new EncodedFileData(
-                        $uploadedFile->getClientFilename(),
-                        $uploadedFile->getClientMediaType(),
-                        $uploadedFile->getSize(),
+                        $fileName,
+                        $fileType,
+                        $fileSize,
                         $streamContent,
                     ),
                 )
@@ -249,7 +252,7 @@ class UploadFileTest extends TestCase
         $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
 
         $request = $this->createRequest('POST', '/upload')
-            ->withUploadedFiles(['file' => $uploadFile])
+            ->withUploadedFiles(['file' => $uploadedFile])
             ->withParsedBody(['hosting_slugs' => $hostingSlugs]);
 
         $response = $this->app->handle($request);
@@ -257,6 +260,6 @@ class UploadFileTest extends TestCase
         $this->assertEquals($response->getStatusCode(), StatusCode::STATUS_CREATED);
 
         $responseBody = json_decode((string) $response->getBody(), true);
-        $this->assertEquals($responseBody, ['file_id' => $createdFile->uuid]);
+        $this->assertEquals($responseBody, ['file_id' => $createFile->uuid]);
     }
 }

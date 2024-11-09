@@ -24,6 +24,7 @@ class CreateFileDataFactory extends MockFactory
         $faker = faker();
 
         return [
+            'uuid' => $faker->uuid(),
             'name' => $faker->filePath(),
             'size' => $faker->randomDigitNotZero(),
             'mimeType' => $faker->mimeType(),

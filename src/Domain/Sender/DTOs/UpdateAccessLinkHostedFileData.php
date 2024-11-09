@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sender\DTOs;
 
-use App\Domain\Sender\Enums\FileStatusEnum;
+use App\Domain\Sender\Enums\FileStatusOnHostEnum;
 
 class UpdateAccessLinkHostedFileData
 {
@@ -12,7 +12,7 @@ class UpdateAccessLinkHostedFileData
         public string $externalFileId,
         public string $webViewLink,
         public string $webContentLink,
-        public FileStatusEnum $status = FileStatusEnum::SEND_SUCCESS
+        public readonly FileStatusOnHostEnum $status = FileStatusOnHostEnum::SEND_SUCCESS
     ) {
     }
 }

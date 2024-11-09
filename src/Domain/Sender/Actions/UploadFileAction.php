@@ -51,7 +51,7 @@ class UploadFileAction
             $hostedFileId = $this->fileHostRepository->create(
                 new CreateHostedFileData(
                     $fileId,
-                    $hosting
+                    $hosting->id,
                 )
             );
 
@@ -78,7 +78,21 @@ class UploadFileAction
     private function validateUploadedFile(UploadedFileInterface $uploadedFile): void
     {
         if (UPLOAD_ERR_OK !== $uploadedFile->getError()) {
-            throw new InvalidFileException($uploadedFile->getError());
+            throw InvalidFileException::fromErrorCode($uploadedFile->getError());
+        }
+
+        $maxFileSize = 5 * 1024 * 1024;
+        if ($uploadedFile->getSize() > $maxFileSize) {
+            throw new InvalidFileException('File size is too large');
+        }
+
+        $allowedMimeTypes = ['image/jpeg', 'image/png'];
+        if (! in_array($uploadedFile->getClientMediaType(), $allowedMimeTypes)) {
+            throw new InvalidFileException('Invalid file type');
+        }
+
+        if (empty($uploadedFile->getStream()->__toString())) {
+            throw new InvalidFileException('Invalid file content');
         }
     }
 
@@ -90,8 +104,9 @@ class UploadFileAction
     private function queryHostingByIds(array $hostingSlugs): array
     {
         $hosts = $this->hostingRepository->queryBySlugs($hostingSlugs);
+        $hostsFound = array_column($hosts, 'slug');
 
-        if (count($hosts) !== count($hostingSlugs)) {
+        if (array_diff($hostingSlugs, $hostsFound)) {
             throw new HostingNotFoundException();
         }
 
