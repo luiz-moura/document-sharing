@@ -9,15 +9,20 @@ use Fig\Http\Message\StatusCodeInterface as StatusCode;
 
 class InvalidFileException extends Exception
 {
-    public function __construct(int $fileUploadErrorCode)
+    public function __construct(string $message)
     {
         parent::__construct(
-            $this->getMessageByCode($fileUploadErrorCode),
+            $message,
             code: StatusCode::STATUS_BAD_REQUEST
         );
     }
 
-    private function getMessageByCode(int $fileUploadErrorCode): string
+    public static function fromErrorCode(int $fileUploadErrorCode): self
+    {
+        return new self(self::getMessageByCode($fileUploadErrorCode));
+    }
+
+    private static function getMessageByCode(int $fileUploadErrorCode): string
     {
         $messages = [
             UPLOAD_ERR_INI_SIZE  => 'The uploaded file exceeds the upload_max_filesize directive in php.ini',

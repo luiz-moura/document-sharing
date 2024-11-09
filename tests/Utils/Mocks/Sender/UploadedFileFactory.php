@@ -12,6 +12,9 @@ use function Tests\Utils\Faker\faker;
 
 class UploadedFileFactory extends MockFactory
 {
+    /**
+     * @param array{size: int, error: string, type: string} $custom
+     */
     public static function create(array $custom = []): UploadedFileInterface
     {
         return new UploadedFile(

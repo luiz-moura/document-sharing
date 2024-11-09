@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\Entities;
 
-use App\Domain\Sender\Enums\FileStatusEnum;
+use App\Domain\Sender\Enums\FileStatusOnHostEnum;
 use App\Infrastructure\Persistence\Doctrine\Repositories\HostedFileRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
@@ -87,12 +87,12 @@ class HostedFileEntity
         return $this->hostingId;
     }
 
-    public function getStatus(): FileStatusEnum
+    public function getStatus(): FileStatusOnHostEnum
     {
-        return FileStatusEnum::from($this->status);
+        return FileStatusOnHostEnum::from($this->status);
     }
 
-    public function setStatus(FileStatusEnum $status): self
+    public function setStatus(FileStatusOnHostEnum $status): self
     {
         $this->status = $status->value;
 

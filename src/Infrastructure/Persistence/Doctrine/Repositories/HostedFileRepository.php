@@ -7,7 +7,7 @@ namespace App\Infrastructure\Persistence\Doctrine\Repositories;
 use App\Domain\Sender\Contracts\HostedFileRepository as HostedFileRepositoryContract;
 use App\Domain\Sender\DTOs\CreateHostedFileData;
 use App\Domain\Sender\DTOs\UpdateAccessLinkHostedFileData;
-use App\Domain\Sender\Enums\FileStatusEnum;
+use App\Domain\Sender\Enums\FileStatusOnHostEnum;
 use App\Infrastructure\Persistence\Doctrine\Entities\HostedFileEntity;
 use Doctrine\ORM\EntityRepository;
 
@@ -17,7 +17,7 @@ class HostedFileRepository extends EntityRepository implements HostedFileReposit
     {
         $hostedFileEntity = new HostedFileEntity(
             $hostedFile->fileId,
-            $hostedFile->hosting->id,
+            $hostedFile->hostingId,
             $hostedFile->status->value,
         );
 
@@ -40,7 +40,7 @@ class HostedFileRepository extends EntityRepository implements HostedFileReposit
         $this->getEntityManager()->flush();
     }
 
-    public function updateStatus(int $hostedFileId, FileStatusEnum $status): void
+    public function updateStatus(int $hostedFileId, FileStatusOnHostEnum $status): void
     {
         $hostedFileEntity = $this->find($hostedFileId);
 
