@@ -16,19 +16,19 @@ use DI\ContainerBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Container\ContainerInterface;
 
-return function (ContainerBuilder $containerBuilder) {
+return function (ContainerBuilder $containerBuilder): void {
     $containerBuilder->addDefinitions([
         /** Factories */
         FileSenderFactoryContract::class => \DI\autowire(HostingFileSenderFactory::class),
 
         /** Repositories */
-        FileRepositoryContract::class => function (ContainerInterface $container) {
+        FileRepositoryContract::class => function (ContainerInterface $container): FileRepositoryContract {
             return $container->get(EntityManagerInterface::class)->getRepository(FileEntity::class);
         },
-        HostingRepositoryContract::class => function (ContainerInterface $container) {
+        HostingRepositoryContract::class => function (ContainerInterface $container): HostingRepositoryContract {
             return $container->get(EntityManagerInterface::class)->getRepository(HostingEntity::class);
         },
-        HostedFileRepositoryContract::class => function (ContainerInterface $container) {
+        HostedFileRepositoryContract::class => function (ContainerInterface $container): HostedFileRepositoryContract {
             return $container->get(EntityManagerInterface::class)->getRepository(HostedFileEntity::class);
         },
 
