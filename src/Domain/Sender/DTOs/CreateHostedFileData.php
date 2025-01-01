@@ -9,9 +9,9 @@ use App\Domain\Sender\Enums\FileStatusOnHostEnum;
 class CreateHostedFileData
 {
     public function __construct(
-        public int $fileId,
-        public int $hostingId,
-        public FileStatusOnHostEnum $status = FileStatusOnHostEnum::TO_SEND,
+        public readonly int $fileId,
+        public readonly int $hostingId,
+        public readonly FileStatusOnHostEnum $status = FileStatusOnHostEnum::TO_SEND,
     ) {
     }
 }

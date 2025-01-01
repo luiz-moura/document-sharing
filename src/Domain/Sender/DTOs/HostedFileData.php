@@ -7,10 +7,10 @@ namespace App\Domain\Sender\DTOs;
 class HostedFileData
 {
     public function __construct(
-        public string $fileId,
-        public string $fileName,
-        public string $webViewLink,
-        public string $webContentLink,
+        public readonly string $fileId,
+        public readonly string $filename,
+        public readonly string $webViewLink,
+        public readonly string $webContentLink,
     ) {
     }
 }

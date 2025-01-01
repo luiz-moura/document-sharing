@@ -7,11 +7,11 @@ namespace App\Domain\Sender\DTOs;
 class HostingData
 {
     public function __construct(
-        public int $id,
-        public string $slug,
-        public string $name,
-        public ?string $refreshableToken = null,
-        public ?string $accessToken = null,
+        public readonly int $id,
+        public readonly string $slug,
+        public readonly string $name,
+        public readonly ?string $refreshableToken = null,
+        public readonly ?string $accessToken = null,
     ) {
     }
 }
