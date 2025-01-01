@@ -9,9 +9,9 @@ use App\Domain\Sender\Enums\FileStatusOnHostEnum;
 class UpdateAccessLinkHostedFileData
 {
     public function __construct(
-        public string $externalFileId,
-        public string $webViewLink,
-        public string $webContentLink,
+        public readonly string $externalFileId,
+        public readonly string $webViewLink,
+        public readonly string $webContentLink,
         public readonly FileStatusOnHostEnum $status = FileStatusOnHostEnum::SEND_SUCCESS
     ) {
     }

@@ -7,9 +7,9 @@ namespace App\Domain\Sender\DTOs;
 class SendFileToHostingData
 {
     public function __construct(
-        public HostingData $hosting,
-        public int $hostedFileId,
-        public EncodedFileData $encodedFile,
+        public readonly string $hostingSlug,
+        public readonly int $hostedFileId,
+        public readonly EncodedFileData $encodedFile,
     ) {
     }
 }

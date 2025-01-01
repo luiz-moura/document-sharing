@@ -7,10 +7,10 @@ namespace App\Domain\Sender\DTOs;
 class EncodedFileData
 {
     public function __construct(
-        public string $filename,
-        public string $mediaType,
-        public int $size,
-        public string $base64,
+        public readonly string $filename,
+        public readonly string $mediaType,
+        public readonly int $size,
+        public readonly string $base64,
     ) {
     }
 }

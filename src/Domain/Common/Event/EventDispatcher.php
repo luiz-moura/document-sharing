@@ -9,7 +9,7 @@ use Psr\EventDispatcher\StoppableEventInterface;
 final class EventDispatcher implements EventDispatcherInterface
 {
     public function __construct(
-        private ListenerProviderInterface $listenerProvider
+        private readonly ListenerProviderInterface $listenerProvider
     ) {
     }
 

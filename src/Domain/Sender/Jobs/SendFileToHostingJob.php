@@ -12,7 +12,7 @@ class SendFileToHostingJob extends AbstractJob
 {
     #[Inject]
     /** @phpstan-ignore-next-line */
-    private SendFileToHostingAction $sendFileToHostingAction;
+    private readonly SendFileToHostingAction $sendFileToHostingAction;
 
     public function handle(): void
     {
