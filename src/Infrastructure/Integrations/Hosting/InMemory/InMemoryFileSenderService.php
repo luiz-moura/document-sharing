@@ -14,9 +14,9 @@ class InMemoryFileSenderService implements FileSenderService
     {
         return new HostedFileData(
             fileId: '312312da',
-            fileName: $encodedFile->filename,
-            webViewLink: "http://localhost:8080/{$encodedFile->filename}.{$encodedFile->mediaType}",
-            webContentLink: "http://localhost:8080/{$encodedFile->filename}.{$encodedFile->mediaType}"
+            filename: $encodedFile->filename,
+            webViewLink: sprintf('http://localhost:8080/%s.%s', $encodedFile->filename, $encodedFile->mediaType),
+            webContentLink: sprintf('http://localhost:8080/%s.%s', $encodedFile->filename, $encodedFile->mediaType),
         );
     }
 }
