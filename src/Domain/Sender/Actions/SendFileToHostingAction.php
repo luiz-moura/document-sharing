@@ -16,9 +16,9 @@ use Throwable;
 class SendFileToHostingAction
 {
     public function __construct(
-        private HostedFileRepository $hostedFileRepository,
-        private FileSenderFactory $fileSenderFactory,
-        private LoggerInterface $logger,
+        private readonly HostedFileRepository $hostedFileRepository,
+        private readonly FileSenderFactory $fileSenderFactory,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -30,20 +30,29 @@ class SendFileToHostingAction
         );
 
         $fileSenderService = $this->fileSenderFactory->create(
-            $sendFileToHosting->hosting->slug
+            $sendFileToHosting->hostingSlug
         );
 
         try {
             $hostedFile = $fileSenderService->send($sendFileToHosting->encodedFile);
-        } catch (Throwable $ex) {
-            $this->logErrorSendingFile($ex, $sendFileToHosting);
+        } catch (Throwable $exception) {
+            $this->logger->error(sprintf('[%s] Failed to send file to service', __METHOD__), [
+                'exception' => (string) $exception,
+                'hosting_slug' => $sendFileToHosting->hostingSlug,
+                'hosted_file_id' => $sendFileToHosting->hostedFileId,
+                'file' => [
+                    'filename' => $sendFileToHosting->encodedFile->filename,
+                    'media_type' => $sendFileToHosting->encodedFile->mediaType,
+                    'size' => $sendFileToHosting->encodedFile->size,
+                ]
+            ]);
 
             $this->hostedFileRepository->updateStatus(
                 $sendFileToHosting->hostedFileId,
                 FileStatusOnHostEnum::SEND_FAILURE
             );
 
-            throw new FailedToUploadFileToHostingException(previous: $ex);
+            throw new FailedToUploadFileToHostingException(previous: $exception);
         }
 
         $this->hostedFileRepository->updateAccessLink(
@@ -54,17 +63,5 @@ class SendFileToHostingAction
                 webContentLink: $hostedFile->webContentLink,
             )
         );
-    }
-
-    private function logErrorSendingFile(Throwable $ex, SendFileToHostingData $sendFileToHosting): void
-    {
-        $this->logger->error(sprintf('[%s] Failed to send file to service', __METHOD__), [
-            'exception' => (string) $ex,
-            'hosting_slug' => $sendFileToHosting->hosting->slug,
-            'hosted_file_id' => $sendFileToHosting->hostedFileId,
-            'file_name' => $sendFileToHosting->encodedFile->filename,
-            'media_type' => $sendFileToHosting->encodedFile->mediaType,
-            'size' => $sendFileToHosting->encodedFile->size,
-        ]);
     }
 }

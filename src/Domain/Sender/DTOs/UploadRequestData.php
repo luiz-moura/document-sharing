@@ -8,14 +8,18 @@ use App\Domain\Common\DTOs\AbstractDataTransferObject;
 use App\Domain\Common\Validators\Rules\NotBlank;
 use Psr\Http\Message\UploadedFileInterface;
 
+/**
+ * @property string[] $hostingSlugs
+ * @property UploadedFileInterface[] $uploadedFiles
+ */
 class UploadRequestData extends AbstractDataTransferObject
 {
     public function __construct(
-        /** @var string[] */
         #[NotBlank]
-        public ?array $hostingSlugs,
+        public readonly array $hostingSlugs,
         #[NotBlank]
-        public ?UploadedFileInterface $uploadedFile,
+        public readonly array $uploadedFiles,
+        public readonly bool $shouldZip,
     ) {
         parent::__construct();
     }
