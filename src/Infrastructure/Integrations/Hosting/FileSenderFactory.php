@@ -9,7 +9,7 @@ use App\Domain\Sender\Contracts\FileSenderService;
 use App\Infrastructure\Integrations\Hosting\Dropbox\DropboxService;
 use App\Infrastructure\Integrations\Hosting\InMemory\InMemoryFileSenderService;
 use App\Infrastructure\Integrations\Hosting\Enums\HostingEnum;
-use App\Infrastructure\Integrations\Hosting\Exceptions\FleSenderHostingNotFoundException;
+use App\Infrastructure\Integrations\Hosting\Exceptions\FileSenderHostingNotFoundException;
 use Psr\Container\ContainerInterface;
 
 class FileSenderFactory implements FileSenderFactoryContract
@@ -20,7 +20,7 @@ class FileSenderFactory implements FileSenderFactoryContract
     }
 
     /**
-     * @throws FleSenderHostingNotFoundException
+     * @throws FileSenderHostingNotFoundException
      */
     public function create(string $type): FileSenderService
     {
@@ -29,7 +29,7 @@ class FileSenderFactory implements FileSenderFactoryContract
         return match ($hosting) {
             HostingEnum::IN_MEMORY => new InMemoryFileSenderService(),
             HostingEnum::DROPBOX => $this->container->get(DropboxService::class),
-            default => throw new FleSenderHostingNotFoundException($type)
+            default => throw new FileSenderHostingNotFoundException($type)
         };
     }
 }

@@ -14,6 +14,8 @@ interface HostingRepository
      */
     public function queryBySlugs(array $hostingSlugs): array;
     public function findBySlug(string $slug): ?HostingData;
+
+    // TODO
     public function updateRefreshableTokenBySlug(string $slug, string $codeAccess): void;
     public function updateAccessTokenBySlug(string $slug, string $accessToken): void;
 }

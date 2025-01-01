@@ -16,19 +16,32 @@ class DropboxRefreshableTokenProvider extends DropboxTokenProvider implements Re
 
         if (Status::STATUS_UNAUTHORIZED !== $exception->getCode()) {
             $this->logger->info(sprintf('[%s] The token was not refreshed because the error is not an auth error', __METHOD__), [
-                'error' => $exception->getMessage(),
+                'error' => (string) $exception,
             ]);
 
             return false;
         }
 
+        // TODO: cache access token
         $hosting = $this->hostingRepository->findBySlug(HostingEnum::DROPBOX->value);
 
+        $newAccessToken = $this->refreshToken($hosting->refreshableToken);
+
+        // TODO: cache update access token
+        $this->hostingRepository->updateAccessTokenBySlug(HostingEnum::DROPBOX->value, $newAccessToken['access_token'] ?? '');
+
+        $this->logger->info(sprintf('[%s] Token has been refreshed', __METHOD__));
+
+        return true;
+    }
+
+    private function refreshToken(string $refreshableToken): ?array
+    {
         try {
             $response = $this->guzzleClient->post('oauth2/token', [
                 'form_params' => [
                     'grant_type' => 'refresh_token',
-                    'refresh_token' => $hosting->refreshableToken,
+                    'refresh_token' => $refreshableToken,
                     'client_id' => $this->clientId,
                     'client_secret' => $this->clientSecret,
                 ],
@@ -38,18 +51,14 @@ class DropboxRefreshableTokenProvider extends DropboxTokenProvider implements Re
              * @var array {access_token: string, token_type: string, expires_in: int} $body
              */
             $body = json_decode($response->getBody()->getContents(), true);
-
-            $this->hostingRepository->updateAccessTokenBySlug(HostingEnum::DROPBOX->value, $body['access_token']);
-
-            $this->logger->info(sprintf('[%s] Token has been refreshed', __METHOD__));
-
-            return true;
-        } catch (Throwable $e) {
+        } catch (Throwable $exception) {
             $this->logger->info(sprintf('[%s] Failed to generate new token', __METHOD__), [
-                'error' => $e->getMessage(),
+                'error' => (string) $exception,
             ]);
 
-            return false;
+            return null;
         }
+
+        return $body;
     }
 }
