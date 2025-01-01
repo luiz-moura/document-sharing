@@ -6,6 +6,7 @@ namespace App\Domain\Sender\DTOs;
 
 use App\Domain\Common\DTOs\AbstractDataTransferObject;
 use App\Domain\Common\Validators\Rules\NotBlank;
+use App\Domain\Common\Validators\Rules\OnlyStrings;
 use Psr\Http\Message\UploadedFileInterface;
 
 /**
@@ -15,7 +16,7 @@ use Psr\Http\Message\UploadedFileInterface;
 class UploadRequestData extends AbstractDataTransferObject
 {
     public function __construct(
-        #[NotBlank]
+        #[NotBlank, OnlyStrings]
         public readonly array $hostingSlugs,
         #[NotBlank]
         public readonly array $uploadedFiles,
