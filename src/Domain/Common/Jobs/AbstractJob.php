@@ -9,19 +9,27 @@ use DI\Attribute\Inject;
 
 abstract class AbstractJob implements Job, Dispatchable
 {
+    public const string DEFAULT_QUEUE_NAME = 'app';
+
+    public const int DEFAULT_MAX_RETRIES = 3;
+
+    public const int DEFAULT_RETRY_DELAY_SECONDS = 5;
+
+    public const int DEFAULT_ATTEMPTS = 0;
+
     #[Inject]
     /** @phpstan-ignore-next-line */
-    private Publisher $publisher;
+    private readonly Publisher $publisher;
 
-    private string $queue = 'app';
+    protected string $queue = self::DEFAULT_QUEUE_NAME;
 
-    protected int $maxRetries = 3;
+    protected int $maxRetries = self::DEFAULT_MAX_RETRIES;
 
-    protected int $retryDelaySeconds = 5;
+    protected int $retryDelaySeconds = self::DEFAULT_RETRY_DELAY_SECONDS;
+
+    protected int $attempts = self::DEFAULT_ATTEMPTS;
 
     protected array $args;
-
-    protected int $attempts = 0;
 
     public function setArgs(mixed ...$args): self
     {
@@ -70,8 +78,8 @@ abstract class AbstractJob implements Job, Dispatchable
             'queue' => $this->queue,
             'maxRetries' => $this->maxRetries,
             'retryDelaySeconds' => $this->retryDelaySeconds,
-            'args' => $this->args,
             'attempts' => $this->attempts,
+            'args' => $this->args,
         ];
     }
 
@@ -80,7 +88,7 @@ abstract class AbstractJob implements Job, Dispatchable
         $this->queue = $serialized['queue'];
         $this->maxRetries = $serialized['maxRetries'];
         $this->retryDelaySeconds = $serialized['retryDelaySeconds'];
-        $this->args = $serialized['args'];
         $this->attempts = $serialized['attempts'];
+        $this->args = $serialized['args'];
     }
 }
