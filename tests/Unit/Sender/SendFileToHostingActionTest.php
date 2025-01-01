@@ -61,7 +61,7 @@ class SendFileToHostingActionTest extends TestCase
         $this->fileSenderFactory
             ->expects($this->once())
             ->method('create')
-            ->with($sendFileToHosting->hosting->slug)
+            ->with($sendFileToHosting->hostingSlug)
             ->willReturn($this->fileSenderService);
 
         $this->fileSenderService
@@ -99,7 +99,7 @@ class SendFileToHostingActionTest extends TestCase
         $this->fileSenderFactory
             ->expects($this->once())
             ->method('create')
-            ->with($sendFileToHosting->hosting->slug)
+            ->with($sendFileToHosting->hostingSlug)
             ->willReturn($this->fileSenderService);
 
         $this->fileSenderService

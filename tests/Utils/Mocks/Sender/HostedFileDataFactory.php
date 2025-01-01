@@ -24,7 +24,7 @@ class HostedFileDataFactory extends MockFactory
 
         return [
             'fileId' => $faker->shuffleString(),
-            'fileName' => $faker->filePath(),
+            'filename' => $faker->filePath(),
             'webViewLink' => $faker->url(),
             'webContentLink' => $faker->url(),
         ];

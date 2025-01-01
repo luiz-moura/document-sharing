@@ -1,5 +1,6 @@
 <?php
 
+// TODO: move to settings
 if (! function_exists('config')) {
     function config(string $key): mixed
     {
