@@ -228,7 +228,7 @@ class UploadFileTest extends TestCase
         $this->sendFileToHostingJob
             ->setArgs(
                 new SendFileToHostingData(
-                    $googleDriveHosting,
+                    $googleDriveHosting->slug,
                     $hostedFileId,
                     new EncodedFileData(
                         $fileName,
