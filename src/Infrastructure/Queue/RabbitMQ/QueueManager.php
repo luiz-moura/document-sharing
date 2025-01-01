@@ -10,19 +10,19 @@ use Psr\Log\LoggerInterface;
 use App\Infrastructure\Queue\Contracts\QueueManagerInterface;
 use DI\Container;
 use RuntimeException;
-use Src\Domain\Common\Queue\Exceptions\InvalidJobException;
+use Src\Domain\Common\Queue\Exceptions\InvalidQueueJobException;
 use Throwable;
 
 class QueueManager implements QueueManagerInterface
 {
-    private AMQPStreamConnection $connection;
-    private AMQPChannel $channel;
+    private readonly AMQPStreamConnection $connection;
+    private readonly AMQPChannel $channel;
 
     public function __construct(
         int $maxRetries,
         int $retryDelaySeconds,
-        private LoggerInterface $logger,
-        private Container $container,
+        private readonly LoggerInterface $logger,
+        private readonly Container $container,
     ) {
         $this->connect($maxRetries, $retryDelaySeconds);
     }
@@ -43,15 +43,15 @@ class QueueManager implements QueueManagerInterface
             $serialized = new AMQPMessage(serialize($message));
             $this->channel->basic_publish($serialized, routing_key: $queue);
         } catch (Throwable $exception) {
-            $this->logger->critical(sprintf('[%s] Failed to publish message.', __METHOD__), [
-                'ex' => (string) $exception,
+            $this->logger->critical(sprintf('[%s] Failed to publish message.' . PHP_EOL, __METHOD__), [
                 'queue' => $queue,
+                'exception' => (string) $exception,
             ]);
 
             throw $exception;
         }
 
-        $this->logger->info(sprintf('[%s] Message published successfully.', __METHOD__), [
+        $this->logger->info(sprintf('[%s] Message published successfully.' . PHP_EOL, __METHOD__), [
             'queue' => $queue,
         ]);
     }
@@ -67,7 +67,7 @@ class QueueManager implements QueueManagerInterface
                 no_ack: false,
                 exclusive: false,
                 nowait: false,
-                callback: fn ($message) => $this->callback($message),
+                callback: [$this, 'callback'],
             );
 
             $this->channel->consume();
@@ -76,9 +76,9 @@ class QueueManager implements QueueManagerInterface
                 $this->channel->wait();
             }
         } catch (Throwable $exception) {
-            $this->logger->error(sprintf('[%s] Failed to consume message.', __METHOD__), [
-                'ex' => (string) $exception,
+            $this->logger->error(sprintf('[%s] Failed to consume message.' . PHP_EOL, __METHOD__), [
                 'queue' => $queue,
+                'exception' => (string) $exception,
             ]);
         }
     }
@@ -100,9 +100,9 @@ class QueueManager implements QueueManagerInterface
                 ticket: null,
             );
         } catch (Throwable $exception) {
-            $this->logger->critical(sprintf('[%s] Failed to declare queue.', __METHOD__), [
-                'ex' => (string) $exception,
+            $this->logger->critical(sprintf('[%s] Failed to declare queue.' . PHP_EOL, __METHOD__), [
                 'queue' => $queue,
+                'exception' => (string) $exception,
             ]);
 
             throw $exception;
@@ -110,7 +110,7 @@ class QueueManager implements QueueManagerInterface
     }
 
     /**
-     * @throws RuntimeException
+     * @throws InvalidQueueJobException
      */
     private function callback(AMQPMessage $message): void
     {
@@ -118,7 +118,7 @@ class QueueManager implements QueueManagerInterface
         $job = unserialize($message->getBody());
 
         if (! $job instanceof Job) {
-            throw new InvalidJobException();
+            throw new InvalidQueueJobException();
         }
 
         $this->container->injectOn($job);
@@ -141,8 +141,8 @@ class QueueManager implements QueueManagerInterface
 
                 $this->publish($job, $job->getQueue());
 
-                $this->logger->error(sprintf('[%s] Failed to process message. Retrying...', $jobClass), [
-                    'ex' => (string) $exception,
+                $this->logger->error(sprintf('[%s] Failed to process message. Retrying...' . PHP_EOL, $jobClass), [
+                    'exception' => (string) $exception,
                     'attempts' => $job->getAttempts(),
                 ]);
 
@@ -152,8 +152,8 @@ class QueueManager implements QueueManagerInterface
             $message->nack(requeue: false);
 
             $this->logger->error(sprintf('[%s] Failed to process message.' . PHP_EOL, $jobClass), [
-                'ex' => (string) $exception,
                 'attempts' => $job->getAttempts(),
+                'exception' => (string) $exception,
             ]);
         }
     }
@@ -174,10 +174,10 @@ class QueueManager implements QueueManagerInterface
                 $this->channel = $this->connection->channel();
 
                 break;
-            } catch (Throwable $ex) {
-                $this->logger->critical(sprintf('[%s] Failed to connect to RabbitMQ', __METHOD__), [
-                    'ex' => (string) $ex,
+            } catch (Throwable $exception) {
+                $this->logger->critical(sprintf('[%s] Failed to connect to RabbitMQ' . PHP_EOL, __METHOD__), [
                     'attempt' => $attempt,
+                    'exception' => (string) $exception,
                 ]);
 
                 sleep($retryDelaySeconds);
