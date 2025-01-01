@@ -6,6 +6,7 @@ namespace App\Domain\Sender\Enums;
 
 enum FileStatusOnHostEnum: string
 {
+    case RECEIVED = 'received';
     case TO_SEND = 'to_send';
     case PROCESSING = 'processing';
     case SEND_FAILURE = 'send_failure';

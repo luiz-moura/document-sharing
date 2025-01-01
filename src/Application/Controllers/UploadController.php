@@ -6,6 +6,7 @@ namespace App\Application\Controllers;
 
 use App\Domain\Sender\Actions\UploadFileAction;
 use App\Domain\Sender\DTOs\UploadRequestData;
+use App\Domain\Sender\Enums\FileStatusOnHostEnum;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -13,21 +14,25 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class UploadController
 {
     public function __construct(
-        private UploadFileAction $uploadFileAction,
+        private readonly UploadFileAction $uploadFileAction,
     ) {
     }
 
     public function upload(Request $request, Response $response): Response
     {
         $uploadRequest = new UploadRequestData(
-            hostingSlugs: $request->getParsedBody()['hosting_slugs'] ?? null,
-            uploadedFile: $request->getUploadedFiles()['file'] ?? null
+            hostingSlugs: $request->getParsedBody()['hosting_slugs'] ?? [],
+            uploadedFiles: $request->getUploadedFiles()['files'] ?? [],
+            shouldZip: $request->getParsedBody()['should_zip'] ?? false,
         );
 
         $fileUuid = ($this->uploadFileAction)($uploadRequest);
 
         $response->getBody()->write(
-            json_encode(['file_id' => $fileUuid])
+            json_encode([
+                'file_id' => $fileUuid,
+                'status' => FileStatusOnHostEnum::RECEIVED->value
+            ])
         );
 
         return $response
