@@ -67,7 +67,7 @@ class QueueManager implements QueueManagerInterface
                 no_ack: false,
                 exclusive: false,
                 nowait: false,
-                callback: [$this, 'callback'],
+                callback: fn (AMQPMessage $message) => $this->callback($message),
             );
 
             $this->channel->consume();
