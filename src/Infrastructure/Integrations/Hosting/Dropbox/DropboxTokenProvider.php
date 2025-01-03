@@ -32,11 +32,15 @@ class DropboxTokenProvider implements TokenProvider
      */
     public function getToken(): string
     {
+        $this->logger->info(sprintf('[%s] Trying to get access token', __METHOD__));
+
         // TODO: cache
         $accessToken = $this->hostingRepository->findBySlug(HostingEnum::DROPBOX->value)->accessToken;
         if ($accessToken) {
             return $accessToken;
         }
+
+        $this->logger->info(sprintf('[%s] Access token is not defined', __METHOD__));
 
         $newAccessToken = $this->generateToken();
         if (! $newAccessToken) {
