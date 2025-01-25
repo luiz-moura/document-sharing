@@ -16,25 +16,31 @@ class DropboxRefreshableTokenProvider extends DropboxTokenProvider implements Re
 
         if (Status::STATUS_UNAUTHORIZED !== $exception->getCode()) {
             $this->logger->info(sprintf('[%s] The token was not refreshed because the error is not an auth error', __METHOD__), [
-                'error' => (string) $exception,
+                'exception' => $exception,
             ]);
 
             return false;
         }
 
-        // TODO: cache access token
         $hosting = $this->hostingRepository->findBySlug(HostingEnum::DROPBOX->value);
 
         $newAccessToken = $this->refreshToken($hosting->refreshableToken);
+        if (is_null($newAccessToken)) {
+            return false;
+        }
 
-        // TODO: cache update access token
-        $this->hostingRepository->updateAccessTokenBySlug(HostingEnum::DROPBOX->value, $newAccessToken['access_token'] ?? '');
+        $this->hostingRepository->updateAccessTokenBySlug(HostingEnum::DROPBOX->value, $newAccessToken['access_token']);
+
+        $this->cache->set(self::TOKEN_CACHE, $newAccessToken['access_token'], $newAccessToken['expires_in']);
 
         $this->logger->info(sprintf('[%s] Token has been refreshed', __METHOD__));
 
         return true;
     }
 
+    /**
+     * @return ?array{access_token: string, expires_in: int, token_type: string}
+     */
     private function refreshToken(string $refreshableToken): ?array
     {
         try {
@@ -53,7 +59,7 @@ class DropboxRefreshableTokenProvider extends DropboxTokenProvider implements Re
             $body = json_decode($response->getBody()->getContents(), true);
         } catch (Throwable $exception) {
             $this->logger->info(sprintf('[%s] Failed to generate new token', __METHOD__), [
-                'error' => (string) $exception,
+                'exception' => $exception,
             ]);
 
             return null;

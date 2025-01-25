@@ -37,14 +37,14 @@ class SendFileToHostingAction
             $hostedFile = $fileSenderService->send($sendFileToHosting->encodedFile);
         } catch (Throwable $exception) {
             $this->logger->error(sprintf('[%s] Failed to send file to service', __METHOD__), [
-                'exception' => (string) $exception,
                 'hosting_slug' => $sendFileToHosting->hostingSlug,
                 'hosted_file_id' => $sendFileToHosting->hostedFileId,
                 'file' => [
                     'filename' => $sendFileToHosting->encodedFile->filename,
                     'media_type' => $sendFileToHosting->encodedFile->mediaType,
                     'size' => $sendFileToHosting->encodedFile->size,
-                ]
+                ],
+                'exception' => $exception,
             ]);
 
             $this->hostedFileRepository->updateStatus(

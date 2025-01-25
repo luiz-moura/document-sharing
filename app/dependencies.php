@@ -13,6 +13,9 @@ use Psr\Container\ContainerInterface;
 use Psr\Log\LoggerInterface;
 use App\Infrastructure\Queue\Contracts\QueueManagerInterface;
 use App\Infrastructure\Queue\RabbitMQ\QueueManager;
+use Psr\SimpleCache\CacheInterface;
+use Symfony\Component\Cache\Adapter\FilesystemAdapter;
+use Symfony\Component\Cache\Psr16Cache;
 
 return function (ContainerBuilder $containerBuilder): void {
     $containerBuilder->addDefinitions([
@@ -46,5 +49,13 @@ return function (ContainerBuilder $containerBuilder): void {
         Publisher::class => function (ContainerInterface $c): QueueManagerInterface {
             return $c->get(QueueManagerInterface::class);
         },
+        CacheInterface::class => DI\factory(function (): Psr16Cache {
+            $filesystemAdapter = new FilesystemAdapter(
+                namespace: 'app_cache',
+                directory: __DIR__ . '/../var/cache'
+            );
+
+            return new Psr16Cache($filesystemAdapter);
+        }),
     ]);
 };

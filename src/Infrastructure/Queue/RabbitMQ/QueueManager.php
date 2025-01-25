@@ -45,7 +45,7 @@ class QueueManager implements QueueManagerInterface
         } catch (Throwable $exception) {
             $this->logger->critical(sprintf('[%s] Failed to publish message.' . PHP_EOL, __METHOD__), [
                 'queue' => $queue,
-                'exception' => (string) $exception,
+                'exception' => $exception,
             ]);
 
             throw $exception;
@@ -78,7 +78,7 @@ class QueueManager implements QueueManagerInterface
         } catch (Throwable $exception) {
             $this->logger->error(sprintf('[%s] Failed to consume message.' . PHP_EOL, __METHOD__), [
                 'queue' => $queue,
-                'exception' => (string) $exception,
+                'exception' => $exception,
             ]);
         }
     }
@@ -102,7 +102,7 @@ class QueueManager implements QueueManagerInterface
         } catch (Throwable $exception) {
             $this->logger->critical(sprintf('[%s] Failed to declare queue.' . PHP_EOL, __METHOD__), [
                 'queue' => $queue,
-                'exception' => (string) $exception,
+                'exception' => $exception,
             ]);
 
             throw $exception;
@@ -142,8 +142,8 @@ class QueueManager implements QueueManagerInterface
                 $this->publish($job, $job->getQueue());
 
                 $this->logger->error(sprintf('[%s] Failed to process message. Retrying...' . PHP_EOL, $jobClass), [
-                    'exception' => (string) $exception,
                     'attempts' => $job->getAttempts(),
+                    'exception' => $exception,
                 ]);
 
                 return;
@@ -153,7 +153,7 @@ class QueueManager implements QueueManagerInterface
 
             $this->logger->error(sprintf('[%s] Failed to process message.' . PHP_EOL, $jobClass), [
                 'attempts' => $job->getAttempts(),
-                'exception' => (string) $exception,
+                'exception' => $exception,
             ]);
         }
     }
@@ -165,6 +165,7 @@ class QueueManager implements QueueManagerInterface
     {
         for ($attempt = 0; $attempt < $maxRetries; $attempt++) {
             try {
+                // TODO: use settings to get
                 $this->connection = new AMQPStreamConnection(
                     config('queue.rabbitmq.host'),
                     config('queue.rabbitmq.port'),
@@ -177,7 +178,7 @@ class QueueManager implements QueueManagerInterface
             } catch (Throwable $exception) {
                 $this->logger->critical(sprintf('[%s] Failed to connect to RabbitMQ' . PHP_EOL, __METHOD__), [
                     'attempt' => $attempt,
-                    'exception' => (string) $exception,
+                    'exception' => $exception,
                 ]);
 
                 sleep($retryDelaySeconds);

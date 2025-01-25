@@ -7,11 +7,14 @@ use App\Infrastructure\Integrations\Hosting\Dropbox\Exceptions\AccessTokenNotDef
 use App\Infrastructure\Integrations\Hosting\Enums\HostingEnum;
 use GuzzleHttp\Client as GuzzleClient;
 use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
 use Spatie\Dropbox\TokenProvider;
 use Throwable;
 
 class DropboxTokenProvider implements TokenProvider
 {
+    protected const string TOKEN_CACHE = 'dropbox-access-token';
+
     protected GuzzleClient $guzzleClient;
 
     public function __construct(
@@ -19,8 +22,10 @@ class DropboxTokenProvider implements TokenProvider
         protected readonly string $clientSecret,
         protected readonly string $accessCode,
         protected readonly LoggerInterface $logger,
-        protected readonly HostingRepository $hostingRepository
+        protected readonly HostingRepository $hostingRepository,
+        protected readonly CacheInterface $cache,
     ) {
+        // TODO:
         $this->guzzleClient = new GuzzleClient([
             'base_uri' => 'https://api.dropboxapi.com',
             'timeout' => 2.0,
@@ -34,9 +39,18 @@ class DropboxTokenProvider implements TokenProvider
     {
         $this->logger->info(sprintf('[%s] Trying to get access token', __METHOD__));
 
-        // TODO: cache
+        if ($this->cache->has(self::TOKEN_CACHE)) {
+            $this->logger->info(sprintf('[%s] Access token has been found in cache', __METHOD__));
+
+            return $this->cache->get(self::TOKEN_CACHE);
+        }
+
         $accessToken = $this->hostingRepository->findBySlug(HostingEnum::DROPBOX->value)->accessToken;
         if ($accessToken) {
+            $this->logger->info(sprintf('[%s] Access token has been found in database', __METHOD__));
+
+            $this->cache->set(self::TOKEN_CACHE, $accessToken);
+
             return $accessToken;
         }
 
@@ -47,13 +61,15 @@ class DropboxTokenProvider implements TokenProvider
             throw new AccessTokenNotDefinedException();
         }
 
-        // TODO: set cache access token
+        // TODO:
         $this->hostingRepository->updateAccessTokenBySlug(HostingEnum::DROPBOX->value, $newAccessToken['access_token'] ?? '');
         $this->hostingRepository->updateRefreshableTokenBySlug(HostingEnum::DROPBOX->value, $newAccessToken['refresh_token'] ?? '');
 
+        $this->cache->set(self::TOKEN_CACHE, $newAccessToken['access_token']);
+
         $this->logger->info(sprintf('[%s] New token has been generated', __METHOD__));
 
-        return $accessToken;
+        return $newAccessToken['access_token'];
     }
 
     private function generateToken(): ?array
@@ -76,7 +92,7 @@ class DropboxTokenProvider implements TokenProvider
             $body = json_decode($response->getBody()->getContents(), true);
         } catch (Throwable $exception) {
             $this->logger->warning(sprintf('[%s] Failed to generate new token', __METHOD__), [
-                'error' => $exception,
+                'exception' => $exception,
             ]);
 
             return null;

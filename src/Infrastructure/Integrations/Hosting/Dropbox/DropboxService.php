@@ -7,6 +7,7 @@ use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostedFileData;
 use Psr\Log\LoggerInterface;
+use Psr\SimpleCache\CacheInterface;
 use Spatie\Dropbox\Client as DropboxClient;
 use Throwable;
 
@@ -16,20 +17,24 @@ class DropboxService implements FileSenderService
 
     public function __construct(
         private readonly LoggerInterface $logger,
-        private readonly HostingRepository $hostingRepository
+        private readonly HostingRepository $hostingRepository,
+        private readonly CacheInterface $cache,
     ) {
         // TODO: use settings to set
         $appKey = config('dropbox.app_key');
         $appSecret = config('dropbox.app_secret');
         $accessCode = config('dropbox.access_code');
 
+        // TODO: Receive as a dependency
         $tokenProvider = new DropboxRefreshableTokenProvider(
             $appKey,
             $appSecret,
             $accessCode,
             $this->logger,
-            $this->hostingRepository
+            $this->hostingRepository,
+            $this->cache,
         );
+
         $this->client = new DropboxClient($tokenProvider);
     }
 
@@ -44,10 +49,6 @@ class DropboxService implements FileSenderService
         $filename = $this->generateFilename($encodedFile->filename);
 
         try {
-            $token = $this->client->getAccessToken();
-
-            $this->client->setAccessToken($token);
-
             /**
              * @var array{path_display: string, id: string, name: string, size: string, path_lower: string} $uploadedFile
              */
@@ -62,7 +63,7 @@ class DropboxService implements FileSenderService
                 'file' => $encodedFile->filename,
                 'mediaType' => $encodedFile->mediaType,
                 'size' => $encodedFile->size,
-                'exception' => strval($exception),
+                'exception' => $exception,
             ]);
 
             throw $exception;
