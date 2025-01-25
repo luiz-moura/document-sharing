@@ -59,7 +59,7 @@ class UploadFileAction
         $fileUploadDate = (new DateTime('now'))->format('Y-m-d_H-i-s');
         $zipName = sprintf('%s_%s_%s.%s', $fileExternalId, $fileUploadDate, count($uploadedFiles), 'zip');
 
-        $filepath = $this->zipFileService->zipFiles($uploadedFiles, 'uploads', $zipName);
+        $filepath = $this->zipFileService->zipFiles($uploadedFiles, __DIR__ . '/../../../../storage/uploads', $zipName);
 
         $filesize = filesize($filepath);
         $mediaType = mime_content_type($filepath);
