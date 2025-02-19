@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Queue\RabbitMQ;
 
-use App\Domain\Common\Jobs\Contracts\Job;
+use App\Domain\Common\Queue\Contracts\Job;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;

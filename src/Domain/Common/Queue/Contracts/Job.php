@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Common\Jobs\Contracts;
+namespace App\Domain\Common\Queue\Contracts;
 
 interface Job
 {

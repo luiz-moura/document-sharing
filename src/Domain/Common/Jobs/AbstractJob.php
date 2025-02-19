@@ -3,7 +3,7 @@
 namespace App\Domain\Common\Jobs;
 
 use App\Domain\Common\Jobs\Contracts\Dispatchable;
-use App\Domain\Common\Jobs\Contracts\Job;
+use App\Domain\Common\Queue\Contracts\Job;
 use App\Domain\Common\Queue\Contracts\Publisher;
 use DI\Attribute\Inject;
 
