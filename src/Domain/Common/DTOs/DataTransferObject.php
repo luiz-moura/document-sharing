@@ -6,7 +6,7 @@ namespace App\Domain\Common\DTOs;
 
 use App\Domain\Common\Validators\AttributeValidator;
 
-abstract class AbstractDataTransferObject
+abstract class DataTransferObject
 {
     public function __construct()
     {
@@ -15,6 +15,7 @@ abstract class AbstractDataTransferObject
 
     private function validate(): void
     {
+        // TODO: remove liability from dto
         $validator = new AttributeValidator();
         $validator->validate($this);
     }
