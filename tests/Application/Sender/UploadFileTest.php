@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Application\Sender;
 
 use App\Application\Handlers\HttpErrorHandler;
-use App\Domain\Common\Uuid\Contracts\UuidGeneratorService;
+use App\Domain\Common\Adapters\Contracts\UuidGeneratorService;
 use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;

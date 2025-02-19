@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use App\Domain\Common\Uuid\Contracts\UuidGeneratorService as UuidGeneratorServiceContract;
+use App\Domain\Common\Adapters\Contracts\UuidGeneratorService as UuidGeneratorServiceContract;
 use App\Domain\Sender\Contracts\HostedFileRepository as HostedFileRepositoryContract;
 use App\Domain\Sender\Contracts\FileRepository as FileRepositoryContract;
 use App\Domain\Sender\Contracts\FileSenderFactory as FileSenderFactoryContract;

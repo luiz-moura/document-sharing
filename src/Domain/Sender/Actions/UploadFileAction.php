@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sender\Actions;
 
-use App\Domain\Common\Uuid\Contracts\UuidGeneratorService;
+use App\Domain\Common\Adapters\Contracts\UuidGeneratorService;
 use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
