@@ -28,12 +28,10 @@ class UploadController
 
         $fileUuid = ($this->uploadFileAction)($uploadRequest);
 
-        $response->getBody()->write(
-            json_encode([
-                'file_id' => $fileUuid,
-                'status' => FileStatusOnHostEnum::RECEIVED->value
-            ])
-        );
+        $response->getBody()->write(json_encode([
+            'file_id' => $fileUuid,
+            'status' => FileStatusOnHostEnum::RECEIVED->value
+        ]));
 
         return $response
             ->withStatus(StatusCode::STATUS_CREATED)

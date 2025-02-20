@@ -11,12 +11,12 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PROPERTY)]
 final class NotBlank implements Validation
 {
-    public function validate(string $propertyName, mixed $value, mixed ...$args): mixed
+    public function validate(string $propertyName, mixed $propertyValue, mixed ...$args): mixed
     {
-        if (empty($value)) {
+        if (empty($propertyValue)) {
             throw new ValidationException("{$propertyName} cant be blank");
         }
 
-        return $value;
+        return $propertyValue;
     }
 }

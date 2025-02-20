@@ -39,4 +39,27 @@ class AttributeValidator
             }
         }
     }
+
+    // TODO: implement this method
+    public static function entityFactory(string $class, array $propertyValues): void
+    {
+        $reflectionClass = new ReflectionClass($class);
+
+        foreach ($propertyValues as $property => $value) {
+            $reflectionProperty = $reflectionClass->getProperty($property);
+
+            $attributes = $reflectionProperty->getAttributes();
+            if (! $attributes) {
+                continue;
+            }
+
+            foreach ($reflectionProperty->getAttributes() as $attribute) {
+                $attributeInstance = $attribute->newInstance();
+
+                if ($attributeInstance instanceof Validation) {
+                    $attributeInstance->validate($property, $value);
+                }
+            }
+        }
+    }
 }

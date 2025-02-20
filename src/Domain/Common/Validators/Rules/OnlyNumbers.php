@@ -11,14 +11,18 @@ use Attribute;
 #[Attribute(Attribute::TARGET_PROPERTY)]
 final class OnlyNumbers implements Validation
 {
-    public function validate(string $propertyName, mixed $value, mixed ...$args): mixed
+    public function validate(string $propertyName, mixed $propertyValue, mixed ...$args): mixed
     {
-        foreach ($value as $item) {
+        if (! is_iterable($propertyValue)) {
+            throw new ValidationException("Only integer values are allowed in the {$propertyName} field.");
+        }
+
+        foreach ($propertyValue as $item) {
             if (! is_int($item)) {
                 throw new ValidationException("Only integer values are allowed in the {$propertyName} field.");
             }
         }
 
-        return $value;
+        return $propertyValue;
     }
 }

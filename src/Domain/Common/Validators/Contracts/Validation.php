@@ -6,5 +6,5 @@ namespace App\Domain\Common\Validators\Contracts;
 
 interface Validation
 {
-    public function validate(string $propertyName, mixed $value, mixed ...$args): mixed;
+    public function validate(string $propertyName, mixed $propertyValue, mixed ...$args): mixed;
 }

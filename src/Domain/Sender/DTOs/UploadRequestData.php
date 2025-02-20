@@ -16,12 +16,12 @@ use Psr\Http\Message\UploadedFileInterface;
 class UploadRequestData extends DataTransferObject
 {
     public function __construct(
-        #[NotBlank, OnlyStrings]
+        #[NotBlank]
+        #[OnlyStrings]
         public readonly array $hostingSlugs,
         #[NotBlank]
         public readonly array $uploadedFiles,
         public readonly bool $shouldZip,
     ) {
-        parent::__construct();
     }
 }
