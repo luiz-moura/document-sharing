@@ -3,11 +3,9 @@
 namespace App\Infrastructure\Integrations\Hosting\Dropbox;
 
 use App\Domain\Sender\Contracts\FileSenderService;
-use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostedFileData;
 use Psr\Log\LoggerInterface;
-use Psr\SimpleCache\CacheInterface;
 use Spatie\Dropbox\Client as DropboxClient;
 use Throwable;
 
@@ -17,11 +15,9 @@ class DropboxService implements FileSenderService
 
     public function __construct(
         private readonly DropboxTokenProvider $tokenProvider,
-        private readonly HostingRepository $hostingRepository,
-        private readonly CacheInterface $cache,
         private readonly LoggerInterface $logger,
     ) {
-        $this->client = new DropboxClient($tokenProvider);
+        $this->client = new DropboxClient($this->tokenProvider);
     }
 
     public function send(EncodedFileData $encodedFile): HostedFileData

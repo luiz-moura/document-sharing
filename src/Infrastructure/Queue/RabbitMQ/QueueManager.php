@@ -34,12 +34,11 @@ class QueueManager implements QueueManagerInterface
         $this->port = $this->settings->get('queue.port');
         $this->user = $this->settings->get('queue.user');
         $this->password = $this->settings->get('queue.password');
-
-        // Connection
         $this->maxRetries = $this->settings->get('queue.max_retries');
         $this->retryDelaySeconds = $this->settings->get('queue.retry_delay_seconds');
 
-        $this->connect();
+        $this->connection = $this->connect();
+        $this->channel = $this->connection->channel();
     }
 
     public function __destruct()
@@ -175,20 +174,16 @@ class QueueManager implements QueueManagerInterface
     /**
      * @throws RuntimeException
      */
-    private function connect(): void
+    private function connect(): AMQPStreamConnection
     {
         for ($attempt = 0; $attempt < $this->maxRetries; $attempt++) {
             try {
-                $this->connection = new AMQPStreamConnection(
+                return new AMQPStreamConnection(
                     $this->host,
                     $this->port,
                     $this->user,
                     $this->password
                 );
-
-                $this->channel = $this->connection->channel();
-
-                break;
             } catch (Throwable $exception) {
                 $this->logger->critical(sprintf('[%s] Failed to connect to RabbitMQ' . PHP_EOL, __METHOD__), [
                     'attempt' => $attempt,
@@ -199,9 +194,7 @@ class QueueManager implements QueueManagerInterface
             }
         }
 
-        if (! isset($this->connection) || ! isset($this->channel)) {
-            throw new RuntimeException('Failed to connect to RabbitMQ.');
-        }
+        throw new RuntimeException('Failed to connect to RabbitMQ.');
     }
 
     public function disconnect(): void
