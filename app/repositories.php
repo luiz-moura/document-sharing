@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Domain\Common\Adapters\Contracts\UuidGeneratorService as UuidGeneratorServiceContract;
+use App\Domain\Common\Queue\Contracts\Publisher;
 use App\Domain\Sender\Contracts\HostedFileRepository as HostedFileRepositoryContract;
 use App\Domain\Sender\Contracts\FileRepository as FileRepositoryContract;
 use App\Domain\Sender\Contracts\FileSenderFactory as FileSenderFactoryContract;
@@ -12,6 +13,8 @@ use App\Infrastructure\Integrations\Hosting\FileSenderFactory as HostingFileSend
 use App\Infrastructure\Persistence\Doctrine\Entities\FileEntity;
 use App\Infrastructure\Persistence\Doctrine\Entities\HostedFileEntity;
 use App\Infrastructure\Persistence\Doctrine\Entities\HostingEntity;
+use App\Infrastructure\Queue\Contracts\QueueManagerInterface;
+use App\Infrastructure\Queue\RabbitMQ\QueueManager;
 use DI\ContainerBuilder;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Container\ContainerInterface;
@@ -34,5 +37,9 @@ return function (ContainerBuilder $containerBuilder): void {
 
         /** Services */
         UuidGeneratorServiceContract::class => \DI\autowire(UuidGeneratorService::class),
+
+        /** Queue */
+        QueueManagerInterface::class => \DI\autowire(QueueManager::class),
+        Publisher::class => \DI\autowire(QueueManager::class),
     ]);
 };

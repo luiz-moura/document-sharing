@@ -2,6 +2,7 @@
 
 namespace App\Infrastructure\Queue\RabbitMQ;
 
+use App\Application\Settings\SettingsInterface;
 use App\Domain\Common\Queue\Contracts\Job;
 use PhpAmqpLib\Channel\AMQPChannel;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
@@ -17,14 +18,28 @@ class QueueManager implements QueueManagerInterface
 {
     private readonly AMQPStreamConnection $connection;
     private readonly AMQPChannel $channel;
+    private readonly int $maxRetries;
+    private readonly int $retryDelaySeconds;
+    private readonly string $host;
+    private readonly int $port;
+    private readonly string $user;
+    private readonly string $password;
 
     public function __construct(
-        int $maxRetries,
-        int $retryDelaySeconds,
+        private SettingsInterface $settings,
         private readonly LoggerInterface $logger,
         private readonly Container $container,
     ) {
-        $this->connect($maxRetries, $retryDelaySeconds);
+        $this->host = $this->settings->get('queue.host');
+        $this->port = $this->settings->get('queue.port');
+        $this->user = $this->settings->get('queue.user');
+        $this->password = $this->settings->get('queue.password');
+
+        // Connection
+        $this->maxRetries = $this->settings->get('queue.max_retries');
+        $this->retryDelaySeconds = $this->settings->get('queue.retry_delay_seconds');
+
+        $this->connect();
     }
 
     public function __destruct()
@@ -114,7 +129,6 @@ class QueueManager implements QueueManagerInterface
      */
     private function callback(AMQPMessage $message): void
     {
-        /** @var Job|mixed $job */
         $job = unserialize($message->getBody());
 
         if (! $job instanceof Job) {
@@ -161,17 +175,17 @@ class QueueManager implements QueueManagerInterface
     /**
      * @throws RuntimeException
      */
-    private function connect(int $maxRetries, int $retryDelaySeconds): void
+    private function connect(): void
     {
-        for ($attempt = 0; $attempt < $maxRetries; $attempt++) {
+        for ($attempt = 0; $attempt < $this->maxRetries; $attempt++) {
             try {
-                // TODO: use settings to get
                 $this->connection = new AMQPStreamConnection(
-                    config('queue.rabbitmq.host'),
-                    config('queue.rabbitmq.port'),
-                    config('queue.rabbitmq.user'),
-                    config('queue.rabbitmq.password')
+                    $this->host,
+                    $this->port,
+                    $this->user,
+                    $this->password
                 );
+
                 $this->channel = $this->connection->channel();
 
                 break;
@@ -181,11 +195,11 @@ class QueueManager implements QueueManagerInterface
                     'exception' => $exception,
                 ]);
 
-                sleep($retryDelaySeconds);
+                sleep($this->retryDelaySeconds);
             }
         }
 
-        if (!isset($this->connection) || !isset($this->channel)) {
+        if (! isset($this->connection) || ! isset($this->channel)) {
             throw new RuntimeException('Failed to connect to RabbitMQ.');
         }
     }

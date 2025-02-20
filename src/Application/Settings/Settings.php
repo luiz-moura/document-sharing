@@ -12,6 +12,21 @@ class Settings implements SettingsInterface
 
     public function get(string $key = ''): mixed
     {
-        return (empty($key)) ? $this->settings : $this->settings[$key];
+        $keys = explode('.', $key);
+        $config = array_shift($keys);
+
+        $config = $this->settings[$config];
+
+        if (! $keys) {
+            return $config;
+        }
+
+        return array_reduce($keys, function ($carry, $key) use ($config): mixed {
+            if (! $carry) {
+                return $config[$key];
+            }
+
+            return $carry[$key];
+        });
     }
 }

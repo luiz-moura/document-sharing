@@ -19,6 +19,18 @@ return function (ContainerBuilder $containerBuilder): void {
                     'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
                     'level' => Logger::DEBUG,
                 ],
+                ...(function (): array {
+                    $configs = [];
+
+                    $files = glob("../config/*.php");
+
+                    foreach ($files as $file) {
+                        $filename = basename($file, '.php');
+                        $configs[$filename] = include $file;
+                    }
+
+                    return $configs;
+                })()
             ]);
         }
     ]);

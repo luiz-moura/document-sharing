@@ -25,12 +25,12 @@ class DropboxClient
         protected readonly SettingsInterface $settings,
         private readonly LoggerInterface $logger,
     ) {
-        $this->clientId = $this->settings->get('dropbox.app_key');
-        $this->clientSecret = $this->settings->get('dropbox.app_secret');
-        $this->accessCode = $this->settings->get('dropbox.access_code');
+        $this->timeout = $this->settings->get('hosts.timeout');
 
-        $this->uri = $this->settings->get('dropbox.uri');
-        $this->timeout = $this->settings->get('dropbox.timeout');
+        $this->uri = $this->settings->get('hosts.dropbox.uri');
+        $this->clientId = $this->settings->get('hosts.dropbox.app_key');
+        $this->clientSecret = $this->settings->get('hosts.dropbox.app_secret');
+        $this->accessCode = $this->settings->get('hosts.dropbox.access_code');
 
         $this->guzzleClient = new GuzzleClient([
             'base_uri' => $this->uri,
