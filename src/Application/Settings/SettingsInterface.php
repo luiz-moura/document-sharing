@@ -6,5 +6,5 @@ namespace App\Application\Settings;
 
 interface SettingsInterface
 {
-    public function get(string $key = ''): mixed;
+    public function get(string $key): mixed;
 }

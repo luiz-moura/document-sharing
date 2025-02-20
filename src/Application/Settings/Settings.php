@@ -10,7 +10,7 @@ class Settings implements SettingsInterface
     {
     }
 
-    public function get(string $key = ''): mixed
+    public function get(string $key): mixed
     {
         $keys = explode('.', $key);
         $config = array_shift($keys);
