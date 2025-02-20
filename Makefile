@@ -47,6 +47,7 @@ migration-diff:
 queue-worker:
 	$(DOCKER_PHP) php $(WORKER_PATH)
 
+# Test & LINT
 .PHONY: test
 test:
 	$(DOCKER_PHP) composer test
@@ -56,7 +57,7 @@ lint-fix:
 	$(DOCKER_PHP) composer lint-fix
 
 .PHONY: stan-analyse
-stan-analisy:
+stan-analyse:
 	$(DOCKER_PHP) composer stan-analyse
 
 .PHONY: check
