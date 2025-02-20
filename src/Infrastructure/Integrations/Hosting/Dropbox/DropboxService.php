@@ -16,25 +16,11 @@ class DropboxService implements FileSenderService
     private readonly DropboxClient $client;
 
     public function __construct(
-        private readonly LoggerInterface $logger,
+        private readonly DropboxTokenProvider $tokenProvider,
         private readonly HostingRepository $hostingRepository,
         private readonly CacheInterface $cache,
+        private readonly LoggerInterface $logger,
     ) {
-        // TODO: use settings to set
-        $appKey = config('dropbox.app_key');
-        $appSecret = config('dropbox.app_secret');
-        $accessCode = config('dropbox.access_code');
-
-        // TODO: Receive as a dependency
-        $tokenProvider = new DropboxRefreshableTokenProvider(
-            $appKey,
-            $appSecret,
-            $accessCode,
-            $this->logger,
-            $this->hostingRepository,
-            $this->cache,
-        );
-
         $this->client = new DropboxClient($tokenProvider);
     }
 

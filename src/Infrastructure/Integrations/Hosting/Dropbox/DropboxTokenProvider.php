@@ -5,31 +5,23 @@ namespace App\Infrastructure\Integrations\Hosting\Dropbox;
 use App\Domain\Sender\Contracts\HostingRepository;
 use App\Infrastructure\Integrations\Hosting\Dropbox\Exceptions\AccessTokenNotDefinedException;
 use App\Infrastructure\Integrations\Hosting\Enums\HostingEnum;
-use GuzzleHttp\Client as GuzzleClient;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 use Spatie\Dropbox\TokenProvider;
-use Throwable;
+use GuzzleHttp\Exception\ClientException;
+use Fig\Http\Message\StatusCodeInterface as Status;
+use Spatie\Dropbox\RefreshableTokenProvider;
 
-class DropboxTokenProvider implements TokenProvider
+class DropboxTokenProvider implements TokenProvider, RefreshableTokenProvider
 {
     protected const string TOKEN_CACHE = 'dropbox-access-token';
 
-    protected GuzzleClient $guzzleClient;
-
     public function __construct(
-        protected readonly string $clientId,
-        protected readonly string $clientSecret,
-        protected readonly string $accessCode,
-        protected readonly LoggerInterface $logger,
+        protected readonly DropboxClient $client,
         protected readonly HostingRepository $hostingRepository,
         protected readonly CacheInterface $cache,
+        protected readonly LoggerInterface $logger,
     ) {
-        // TODO:
-        $this->guzzleClient = new GuzzleClient([
-            'base_uri' => 'https://api.dropboxapi.com',
-            'timeout' => 2.0,
-        ]);
     }
 
     /**
@@ -56,7 +48,7 @@ class DropboxTokenProvider implements TokenProvider
 
         $this->logger->info(sprintf('[%s] Access token is not defined', __METHOD__));
 
-        $newAccessToken = $this->generateToken();
+        $newAccessToken = $this->client->generateToken();
         if (! $newAccessToken) {
             throw new AccessTokenNotDefinedException();
         }
@@ -72,32 +64,31 @@ class DropboxTokenProvider implements TokenProvider
         return $newAccessToken['access_token'];
     }
 
-    private function generateToken(): ?array
+    public function refresh(ClientException $exception): bool
     {
-        $this->logger->info(sprintf('[%s] Trying to generate a new token', __METHOD__));
+        $this->logger->info(sprintf('[%s] Trying to refresh the token', __METHOD__));
 
-        try {
-            $response = $this->guzzleClient->post('oauth2/token', [
-                'form_params' => [
-                    'grant_type' => 'authorization_code',
-                    'client_id' => $this->clientId,
-                    'client_secret' => $this->clientSecret,
-                    'code' => $this->accessCode,
-                ],
-            ]);
-
-            /**
-             * @var array {access_token: string, token_type: string, expires_in: int, refresh_token: string, scope: string, uid: string, account_id: string} $body
-             */
-            $body = json_decode($response->getBody()->getContents(), true);
-        } catch (Throwable $exception) {
-            $this->logger->warning(sprintf('[%s] Failed to generate new token', __METHOD__), [
+        if (Status::STATUS_UNAUTHORIZED !== $exception->getCode()) {
+            $this->logger->info(sprintf('[%s] The token was not refreshed because the error is not an auth error', __METHOD__), [
                 'exception' => $exception,
             ]);
 
-            return null;
+            return false;
         }
 
-        return $body;
+        $hosting = $this->hostingRepository->findBySlug(HostingEnum::DROPBOX->value);
+
+        $newAccessToken = $this->client->refreshToken($hosting->refreshableToken);
+        if (is_null($newAccessToken)) {
+            return false;
+        }
+
+        $this->hostingRepository->updateAccessTokenBySlug(HostingEnum::DROPBOX->value, $newAccessToken['access_token']);
+
+        $this->cache->set(self::TOKEN_CACHE, $newAccessToken['access_token'], $newAccessToken['expires_in']);
+
+        $this->logger->info(sprintf('[%s] Token has been refreshed', __METHOD__));
+
+        return true;
     }
 }
