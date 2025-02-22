@@ -53,7 +53,6 @@ class DropboxTokenProvider implements TokenProvider, RefreshableTokenProvider
             throw new AccessTokenNotDefinedException();
         }
 
-        // TODO:
         $this->hostingRepository->updateAccessTokenBySlug(HostingEnum::DROPBOX->value, $newAccessToken['access_token'] ?? '');
         $this->hostingRepository->updateRefreshableTokenBySlug(HostingEnum::DROPBOX->value, $newAccessToken['refresh_token'] ?? '');
 
