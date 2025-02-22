@@ -7,5 +7,5 @@ namespace Tests\Utils\Mocks;
 abstract class MockFactory
 {
     abstract public static function create(array $custom = []): object;
-    abstract public static function getValues(): array;
+    abstract public static function make(): array;
 }

@@ -14,11 +14,11 @@ class HostedFileDataFactory extends MockFactory
     public static function create(array $custom = []): HostedFileData
     {
         return new HostedFileData(
-            ...($custom + static::getValues())
+            ...($custom + static::make())
         );
     }
 
-    public static function getValues(): array
+    public static function make(): array
     {
         $faker = faker();
 

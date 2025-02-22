@@ -46,7 +46,7 @@ class UploadFileAction
             return [$this->zipFiles($uploadRequest->uploadedFiles, $hosts)];
         }
 
-        return $this->sendSeparately($uploadRequest->uploadedFiles, $hosts);
+        return $this->sendIndividually($uploadRequest->uploadedFiles, $hosts);
     }
 
     /**
@@ -90,7 +90,7 @@ class UploadFileAction
      * @param string[] $hosts
      * @return string[]
      */
-    private function sendSeparately(array $uploadedFiles, array $hosts): array
+    private function sendIndividually(array $uploadedFiles, array $hosts): array
     {
         $fileExternalIds = [];
 
@@ -107,13 +107,14 @@ class UploadFileAction
                 )
             );
 
-            $uploadedFile->getStream()->rewind();
+            $stream = $uploadedFile->getStream();
+            $stream->rewind();
 
             $encodedFile = new EncodedFileData(
-                filename: $uploadedFile->getClientFilename(),
-                mediaType: $uploadedFile->getClientMediaType(),
-                size:  $uploadedFile->getSize(),
-                base64: base64_encode($uploadedFile->getStream()->getContents()),
+                $uploadedFile->getClientFilename(),
+                $uploadedFile->getClientMediaType(),
+                $uploadedFile->getSize(),
+                base64_encode($stream->getContents()),
             );
 
             $this->sendFileToHosting($fileId, $hosts, $encodedFile);
@@ -158,6 +159,10 @@ class UploadFileAction
                 throw InvalidFileException::fromErrorCode($uploadedFile->getError(), $filename);
             }
 
+            if (! $uploadedFile->getSize()) {
+                throw new InvalidFileException(sprintf('Invalid file content, filename: %s', $filename));
+            }
+
             $maxFileSize = 5 * 1024 * 1024; // 5MB
             if ($uploadedFile->getSize() > $maxFileSize) {
                 throw new InvalidFileException(sprintf('File size is too large, filename: %s', $filename));
@@ -167,24 +172,20 @@ class UploadFileAction
             if (! in_array($uploadedFile->getClientMediaType(), $allowedMimeTypes)) {
                 throw new InvalidFileException(sprintf('Invalid file type, filename: %s', $filename));
             }
-
-            if (! $uploadedFile->getStream()->getSize()) {
-                throw new InvalidFileException(sprintf('Invalid file content, filename: %s', $filename));
-            }
         });
     }
 
     /**
-     * @param string[] $hostingSlugs
+     * @param string[] $hostingSlugInPayload
      * @return HostingData[]
      * @throws HostingNotFoundException
      */
-    private function queryHostingByIds(array $hostingSlugs): array
+    private function queryHostingByIds(array $hostingSlugInPayload): array
     {
-        $hosts = $this->hostingRepository->queryBySlugs($hostingSlugs);
+        $hosts = $this->hostingRepository->queryBySlugs($hostingSlugInPayload);
         $hostsFound = array_column($hosts, 'slug');
 
-        if ($hostsNotFound = array_diff($hostingSlugs, $hostsFound)) {
+        if ($hostsNotFound = array_diff($hostingSlugInPayload, $hostsFound)) {
             throw HostingNotFoundException::fromHostingNotFound($hostsNotFound);
         }
 

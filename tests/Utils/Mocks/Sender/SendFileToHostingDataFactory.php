@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Tests\Utils\Mocks\Sender;
 
 use App\Domain\Sender\DTOs\EncodedFileData;
-use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use Tests\Utils\Mocks\MockFactory;
 
@@ -16,21 +15,17 @@ class SendFileToHostingDataFactory extends MockFactory
     public static function create(array $custom = []): SendFileToHostingData
     {
         return new SendFileToHostingData(
-            ...($custom + static::getValues())
+            ...($custom + static::make())
         );
     }
 
-    public static function getValues(): array
+    public static function make(): array
     {
         $faker = faker();
 
         return [
+            'hostingSlug' => $faker->slug(),
             'hostedFileId' => $faker->randomDigitNotZero(),
-            'hosting' => new HostingData(
-                id: $faker->randomDigitNotZero(),
-                slug: $faker->slug(),
-                name: $faker->monthName(),
-            ),
             'encodedFile' => new EncodedFileData(
                 filename: $faker->word(),
                 mediaType: $faker->mimeType(),

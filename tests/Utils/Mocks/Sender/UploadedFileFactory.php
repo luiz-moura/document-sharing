@@ -18,11 +18,11 @@ class UploadedFileFactory extends MockFactory
     public static function create(array $custom = []): UploadedFileInterface
     {
         return new UploadedFile(
-            ...($custom + static::getValues())
+            ...($custom + static::make())
         );
     }
 
-    public static function getValues(): array
+    public static function make(): array
     {
         $faker = faker();
 

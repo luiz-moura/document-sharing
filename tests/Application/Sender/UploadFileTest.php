@@ -72,11 +72,7 @@ class UploadFileTest extends TestCase
         $this->sendFileToHostingJob->dispatch()->shouldNotBeCalled();
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
 
-        $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
-        $this->container->set(HostedFileRepository::class, $this->hostedFileRepositoryProphecy->reveal());
-        $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
-        $this->container->set(SendFileToHostingJob::class, $this->sendFileToHostingJob->reveal());
-        $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
+        $this->containerSetProphecyReveal();
 
         $request = $this->createRequest('POST', '/upload')
             ->withParsedBody(['hosting_slugs' => [$this->faker->slug(1)]]);
@@ -106,11 +102,7 @@ class UploadFileTest extends TestCase
         $this->sendFileToHostingJob->dispatch()->shouldNotBeCalled();
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
 
-        $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
-        $this->container->set(HostedFileRepository::class, $this->hostedFileRepositoryProphecy->reveal());
-        $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
-        $this->container->set(SendFileToHostingJob::class, $this->sendFileToHostingJob->reveal());
-        $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
+        $this->containerSetProphecyReveal();
 
         $uploadedFile = UploadedFileFactory::create();
 
@@ -142,11 +134,7 @@ class UploadFileTest extends TestCase
         $this->sendFileToHostingJob->dispatch()->shouldNotBeCalled();
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
 
-        $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
-        $this->container->set(HostedFileRepository::class, $this->hostedFileRepositoryProphecy->reveal());
-        $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
-        $this->container->set(SendFileToHostingJob::class, $this->sendFileToHostingJob->reveal());
-        $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
+        $this->containerSetProphecyReveal();
 
         $hostingSlugs = [$this->faker->slug(1)];
         $uploadedFile = $uploadedFile = UploadedFileFactory::create(['error' => UPLOAD_ERR_NO_FILE]);
@@ -245,11 +233,7 @@ class UploadFileTest extends TestCase
             ->dispatch()
             ->shouldBeCalledOnce();
 
-        $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
-        $this->container->set(HostedFileRepository::class, $this->hostedFileRepositoryProphecy->reveal());
-        $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
-        $this->container->set(SendFileToHostingJob::class, $this->sendFileToHostingJob->reveal());
-        $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
+        $this->containerSetProphecyReveal();
 
         $request = $this->createRequest('POST', '/upload')
             ->withUploadedFiles(['file' => $uploadedFile])
@@ -261,5 +245,14 @@ class UploadFileTest extends TestCase
 
         $responseBody = json_decode((string) $response->getBody(), true);
         $this->assertEquals($responseBody, ['file_id' => $createFile->uuid]);
+    }
+
+    private function containerSetProphecyReveal(): void
+    {
+        $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
+        $this->container->set(HostedFileRepository::class, $this->hostedFileRepositoryProphecy->reveal());
+        $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
+        $this->container->set(SendFileToHostingJob::class, $this->sendFileToHostingJob->reveal());
+        $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
     }
 }

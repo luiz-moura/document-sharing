@@ -17,6 +17,7 @@ use App\Domain\Sender\DTOs\UploadRequestData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
 use App\Domain\Sender\Exceptions\InvalidFileException;
 use App\Domain\Sender\Jobs\SendFileToHostingJob;
+use App\Domain\Sender\Services\ZipFile\ZipFileService;
 use Faker\Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -35,6 +36,7 @@ class UploadFileActionTest extends TestCase
     private MockObject|HostingRepository $hostingRepository;
     private MockObject|SendFileToHostingJob $sendFileToHostingJob;
     private MockObject|UuidGeneratorService $uuidGeneratorService;
+    private MockObject|ZipFileService $zipFileService;
     private UploadFileAction $sut;
 
     protected function setUp(): void
@@ -48,6 +50,7 @@ class UploadFileActionTest extends TestCase
         $this->hostingRepository = $this->createMock(HostingRepository::class);
         $this->sendFileToHostingJob = $this->createMock(SendFileToHostingJob::class);
         $this->uuidGeneratorService = $this->createMock(UuidGeneratorService::class);
+        $this->zipFileService = $this->createMock(ZipFileService::class);
 
         $this->sut = new UploadFileAction(
             $this->fileRepository,
@@ -55,6 +58,7 @@ class UploadFileActionTest extends TestCase
             $this->hostingRepository,
             $this->sendFileToHostingJob,
             $this->uuidGeneratorService,
+            $this->zipFileService,
         );
     }
 
@@ -83,13 +87,18 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('dispatch');
 
+        $this->zipFileService
+            ->expects($this->never())
+            ->method('zipFiles');
+
         $this->expectException(InvalidFileException::class);
         $this->expectExceptionMessage('Failed to write file to disk.');
 
         $this->sut->__invoke(
             new UploadRequestData(
                 $hostingSlug,
-                $uploadedFile
+                [$uploadedFile],
+                shouldZip: false,
             )
         );
     }
@@ -125,13 +134,18 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('dispatch');
 
+        $this->zipFileService
+            ->expects($this->never())
+            ->method('zipFiles');
+
         $this->expectException(InvalidFileException::class);
         $this->expectExceptionMessage('File size is too large');
 
         $this->sut->__invoke(
             new UploadRequestData(
                 $hostingSlug,
-                $uploadedFile
+                [$uploadedFile],
+                shouldZip: false,
             )
         );
     }
@@ -167,13 +181,18 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('dispatch');
 
+        $this->zipFileService
+            ->expects($this->never())
+            ->method('zipFiles');
+
         $this->expectException(InvalidFileException::class);
         $this->expectExceptionMessage('Invalid file type');
 
         $this->sut->__invoke(
             new UploadRequestData(
                 $hostingSlug,
-                $uploadedFile
+                [$uploadedFile],
+                shouldZip: false,
             )
         );
     }
@@ -181,13 +200,6 @@ class UploadFileActionTest extends TestCase
     public function testShouldFailWhenFileIsEmpty(): void
     {
         $fileSize = 0;
-        $fileType = 'image/jpeg';
-        $streamContent = '';
-
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->expects($this->once())
-            ->method('__toString')
-            ->willReturn($streamContent);
 
         $uploadedFile = $this->createMock(UploadedFileInterface::class);
         $uploadedFile->expects($this->once())
@@ -196,12 +208,10 @@ class UploadFileActionTest extends TestCase
         $uploadedFile->expects($this->once())
             ->method('getSize')
             ->willReturn($fileSize);
-        $uploadedFile->expects($this->once())
-            ->method('getClientMediaType')
-            ->willReturn($fileType);
-        $uploadedFile->expects($this->once())
-            ->method('getStream')
-            ->willReturn($stream);
+        $uploadedFile->expects($this->never())
+            ->method('getClientMediaType');
+        $uploadedFile->expects($this->never())
+            ->method('getStream');
 
         $hostingSlugs = [$this->faker->slug(1), $this->faker->slug(1)];
 
@@ -227,13 +237,18 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('dispatch');
 
+        $this->zipFileService
+            ->expects($this->never())
+            ->method('zipFiles');
+
         $this->expectException(InvalidFileException::class);
         $this->expectExceptionMessage('Invalid file content');
 
         $this->sut->__invoke(
             new UploadRequestData(
                 $hostingSlugs,
-                $uploadedFile
+                [$uploadedFile],
+                shouldZip: false,
             )
         );
     }
@@ -242,26 +257,19 @@ class UploadFileActionTest extends TestCase
     {
         $fileSize = 5 * 1024 * 1024; // 5MB
         $fileType = 'image/jpeg';
-        $streamContent = 'any';
-
-        $stream = $this->createMock(StreamInterface::class);
-        $stream->expects($this->once())
-            ->method('__toString')
-            ->willReturn($streamContent);
 
         $uploadedFile = $this->createMock(UploadedFileInterface::class);
         $uploadedFile->expects($this->once())
             ->method('getError')
             ->willReturn(UPLOAD_ERR_OK);
-        $uploadedFile->expects($this->once())
+        $uploadedFile->expects($this->exactly(2))
             ->method('getSize')
             ->willReturn($fileSize);
         $uploadedFile->expects($this->once())
             ->method('getClientMediaType')
             ->willReturn($fileType);
-        $uploadedFile->expects($this->once())
-            ->method('getStream')
-            ->willReturn($stream);
+        $uploadedFile->expects($this->never())
+            ->method('getStream');
 
         $hostingSlugs = [$this->faker->slug(1), $this->faker->slug(1)];
 
@@ -287,12 +295,17 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('dispatch');
 
+        $this->zipFileService
+            ->expects($this->never())
+            ->method('zipFiles');
+
         $this->expectException(HostingNotFoundException::class);
 
         $this->sut->__invoke(
             new UploadRequestData(
                 $hostingSlugs,
-                $uploadedFile
+                [$uploadedFile],
+                shouldZip: false,
             )
         );
     }
@@ -305,21 +318,23 @@ class UploadFileActionTest extends TestCase
         $streamContent = 'any';
 
         $stream = $this->createMock(StreamInterface::class);
-        $stream->expects($this->exactly(3))
-            ->method('__toString')
+        $stream->expects($this->exactly(1))
+            ->method('rewind');
+        $stream->expects($this->exactly(1))
+            ->method('getContents')
             ->willReturn($streamContent);
 
         $uploadedFile = $this->createMock(UploadedFileInterface::class);
         $uploadedFile->expects($this->exactly(3))
             ->method('getClientFilename')
             ->willReturn($fileName);
-        $uploadedFile->expects($this->exactly(4))
+        $uploadedFile->expects($this->exactly(3))
             ->method('getClientMediaType')
             ->willReturn($fileType);
         $uploadedFile->expects($this->exactly(4))
             ->method('getSize')
             ->willReturn($fileSize);
-        $uploadedFile->expects($this->exactly(3))
+        $uploadedFile->expects($this->exactly(1))
             ->method('getStream')
             ->willReturn($stream);
 
@@ -352,19 +367,17 @@ class UploadFileActionTest extends TestCase
             ->with($createFile)
             ->willReturn($fileId);
 
+        $this->zipFileService
+            ->expects($this->never())
+            ->method('zipFiles');
+
         $this->hostedFileRepository
             ->expects($this->exactly(2))
             ->method('create')
             ->with(
                 $this->logicalOr(
-                    new CreateHostedFileData(
-                        fileId: $fileId,
-                        hostingId: $googleDriveHosting->id
-                    ),
-                    new CreateHostedFileData(
-                        fileId: $fileId,
-                        hostingId: $dropboxHosting->id
-                    ),
+                    new CreateHostedFileData($fileId, $googleDriveHosting->id),
+                    new CreateHostedFileData($fileId, $dropboxHosting->id),
                 )
             )->willReturnOnConsecutiveCalls(
                 $hostedFileIds[0],
@@ -377,23 +390,23 @@ class UploadFileActionTest extends TestCase
             ->with(
                 $this->logicalOr(
                     new SendFileToHostingData(
-                        $googleDriveHosting,
+                        $googleDriveHosting->slug,
                         $hostedFileIds[0],
                         new EncodedFileData(
-                            filename: $fileName,
-                            mediaType: $fileType,
-                            size: $fileSize,
-                            base64: $streamContent,
+                            $fileName,
+                            $fileType,
+                            $fileSize,
+                            base64_encode($streamContent),
                         ),
                     ),
                     new SendFileToHostingData(
-                        $dropboxHosting,
+                        $dropboxHosting->slug,
                         $hostedFileIds[1],
                         new EncodedFileData(
-                            filename: $fileName,
-                            mediaType: $fileType,
-                            size: $fileSize,
-                            base64: $streamContent,
+                            $fileName,
+                            $fileType,
+                            $fileSize,
+                            base64_encode($streamContent),
                         ),
                     ),
                 )
@@ -406,7 +419,8 @@ class UploadFileActionTest extends TestCase
         $this->sut->__invoke(
             new UploadRequestData(
                 $hostingSlugs,
-                $uploadedFile
+                [$uploadedFile],
+                shouldZip: false,
             )
         );
     }
