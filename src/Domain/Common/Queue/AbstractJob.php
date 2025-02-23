@@ -1,13 +1,10 @@
 <?php
 
-namespace App\Domain\Common\Jobs;
+namespace App\Domain\Common\Queue;
 
-use App\Domain\Common\Jobs\Contracts\Dispatchable;
 use App\Domain\Common\Queue\Contracts\Job;
-use App\Domain\Common\Queue\Contracts\Publisher;
-use DI\Attribute\Inject;
 
-abstract class AbstractJob implements Job, Dispatchable
+abstract class AbstractJob implements Job
 {
     public const string DEFAULT_QUEUE_NAME = 'app';
 
@@ -16,10 +13,6 @@ abstract class AbstractJob implements Job, Dispatchable
     public const int DEFAULT_RETRY_DELAY_SECONDS = 5;
 
     public const int DEFAULT_ATTEMPTS = 0;
-
-    #[Inject]
-    /** @phpstan-ignore-next-line */
-    private readonly Publisher $publisher;
 
     protected string $queue = self::DEFAULT_QUEUE_NAME;
 
@@ -51,11 +44,6 @@ abstract class AbstractJob implements Job, Dispatchable
     }
 
     abstract public function handle(): void;
-
-    public function dispatch(): void
-    {
-        $this->publisher->publish($this, $this->queue);
-    }
 
     public function getAttempts(): int
     {

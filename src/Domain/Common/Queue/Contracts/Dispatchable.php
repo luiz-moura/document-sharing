@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Common\Jobs\Contracts;
+namespace App\Domain\Common\Queue\Contracts;
 
 interface Dispatchable
 {
