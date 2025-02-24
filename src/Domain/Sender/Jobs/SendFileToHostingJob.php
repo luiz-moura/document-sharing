@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sender\Jobs;
 
-use App\Domain\Common\Jobs\AbstractJob;
+use App\Domain\Common\Queue\AbstractJob;
 use App\Domain\Sender\Actions\SendFileToHostingAction;
 use DI\Attribute\Inject;
 

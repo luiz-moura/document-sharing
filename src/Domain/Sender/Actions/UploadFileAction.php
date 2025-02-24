@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Sender\Actions;
 
 use App\Domain\Common\Adapters\Contracts\UuidGeneratorService;
+use App\Domain\Common\Queue\Dispatcher;
 use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
@@ -29,7 +30,8 @@ class UploadFileAction
         private readonly HostingRepository $hostingRepository,
         private readonly UuidGeneratorService $uuidGeneratorService,
         private readonly ZipFileService $zipFileService,
-        private readonly SendFileToHostingJob $sendFileToHostingJob
+        private readonly SendFileToHostingJob $sendFileToHostingJob,
+        private readonly Dispatcher $dispatcher,
     ) {
     }
 
@@ -84,9 +86,9 @@ class UploadFileAction
 
     private function generateFilename(string $fileUuid): string
     {
-        $fileUploadDate = (new DateTime('now'))->format('Y-m-d_H-i-s');
+        $date = (new DateTime('now'))->format('Y-m-d_H-i-s');
 
-        return sprintf('upload_%s_%s.%s', $fileUploadDate, $fileUuid, 'zip');
+        return sprintf('upload_%s_%s.%s', $date, $fileUuid, 'zip');
     }
 
     /**
@@ -146,7 +148,9 @@ class UploadFileAction
                     $fileHostingId,
                     $encodedFile,
                 )
-            )->dispatch();
+            );
+
+            $this->dispatcher->addJob($this->sendFileToHostingJob)->dispatch();
         }
     }
 
