@@ -14,7 +14,7 @@ class HostingRepository extends EntityRepository implements HostingRepositoryCon
 {
     public function queryBySlugs(array $hostingSlugs): array
     {
-        $hosts = $this->createQueryBuilder('h')
+        $hostings = $this->createQueryBuilder('h')
             ->where('h.slug IN (:slugs)')
             ->setParameter('slugs', $hostingSlugs)
             ->getQuery()
@@ -28,7 +28,7 @@ class HostingRepository extends EntityRepository implements HostingRepositoryCon
                 $hosting->getRefreshableToken(),
                 $hosting->getAccessToken(),
             ),
-            $hosts
+            $hostings
         );
     }
 

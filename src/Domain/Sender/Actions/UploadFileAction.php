@@ -27,9 +27,9 @@ class UploadFileAction
         private readonly FileRepository $fileRepository,
         private readonly HostedFileRepository $fileHostRepository,
         private readonly HostingRepository $hostingRepository,
-        private readonly SendFileToHostingJob $sendFileToHostingJob,
         private readonly UuidGeneratorService $uuidGeneratorService,
         private readonly ZipFileService $zipFileService,
+        private readonly SendFileToHostingJob $sendFileToHostingJob
     ) {
     }
 
@@ -40,67 +40,71 @@ class UploadFileAction
     {
         $this->validateUploadedFile($uploadRequest->uploadedFiles);
 
-        $hosts = $this->queryHostingByIds($uploadRequest->hostingSlugs);
+        $hostings = $this->queryHostingByIds($uploadRequest->hostingSlugs);
 
         if ($uploadRequest->shouldZip) {
-            return [$this->zipFiles($uploadRequest->uploadedFiles, $hosts)];
+            return [$this->zipFiles($uploadRequest->uploadedFiles, $hostings)];
         }
 
-        return $this->sendIndividually($uploadRequest->uploadedFiles, $hosts);
+        return $this->sendIndividually($uploadRequest->uploadedFiles, $hostings);
     }
 
     /**
      * @param UploadedFileInterface[] $uploadedFiles
-     * @param string[] $hosts
+     * @param string[] $hostings
      */
-    private function zipFiles(array $uploadedFiles, array $hosts): string
+    private function zipFiles(array $uploadedFiles, array $hostings): string
     {
-        $fileExternalId = $this->uuidGeneratorService->generateUuid();
-        $fileUploadDate = (new DateTime('now'))->format('Y-m-d_H-i-s');
-        $zipName = sprintf('%s_%s_%s.%s', $fileExternalId, $fileUploadDate, count($uploadedFiles), 'zip');
-
-        $filepath = $this->zipFileService->zipFiles($uploadedFiles, __DIR__ . '/../../../../storage/uploads', $zipName);
-
+        $fileUuid = $this->uuidGeneratorService->generateUuid();
+        $filename = $this->generateFilename($fileUuid);
+        $filepath = $this->zipFileService->zipFiles($uploadedFiles, __DIR__ . '/../../../../storage/uploads', $filename);
         $filesize = filesize($filepath);
         $mediaType = mime_content_type($filepath);
 
         $fileId = $this->fileRepository->create(
             new CreateFileData(
-                $fileExternalId,
-                $zipName,
+                $fileUuid,
+                $filepath,
                 $filesize,
                 $mediaType,
             )
         );
 
         $encodedFile = new EncodedFileData(
-            $zipName,
+            $filepath,
             $mediaType,
             $filesize,
             base64_encode(file_get_contents($filepath)),
         );
 
-        $this->sendFileToHosting($fileId, $hosts, $encodedFile);
+        $this->sendFileToHosting($fileId, $hostings, $encodedFile);
 
-        return $fileExternalId;
+        return $fileUuid;
+    }
+
+    private function generateFilename(string $fileUuid): string
+    {
+        $fileUploadDate = (new DateTime('now'))->format('Y-m-d_H-i-s');
+
+        return sprintf('upload_%s_%s.%s', $fileUploadDate, $fileUuid, 'zip');
     }
 
     /**
      * @param UploadedFileInterface[] $uploadedFiles
-     * @param string[] $hosts
+     * @param string[] $hostings
      * @return string[]
      */
-    private function sendIndividually(array $uploadedFiles, array $hosts): array
+    private function sendIndividually(array $uploadedFiles, array $hostings): array
     {
-        $fileExternalIds = [];
+        $filesUuid = [];
 
         foreach ($uploadedFiles as $uploadedFile) {
-            $fileExternalId = $this->uuidGeneratorService->generateUuid();
-            $fileExternalIds[] = $fileExternalId;
+            $fileUuid = $this->uuidGeneratorService->generateUuid();
+            $filesUuid[] = $fileUuid;
 
             $fileId = $this->fileRepository->create(
                 new CreateFileData(
-                    $fileExternalId,
+                    $fileUuid,
                     $uploadedFile->getClientFilename(),
                     $uploadedFile->getSize(),
                     $uploadedFile->getClientMediaType(),
@@ -117,19 +121,19 @@ class UploadFileAction
                 base64_encode($stream->getContents()),
             );
 
-            $this->sendFileToHosting($fileId, $hosts, $encodedFile);
+            $this->sendFileToHosting($fileId, $hostings, $encodedFile);
         }
 
-        return $fileExternalIds;
+        return $filesUuid;
     }
 
     /**
-     * @param HostingData[] $hosts
+     * @param HostingData[] $hostings
      */
-    private function sendFileToHosting(int $fileId, array $hosts, EncodedFileData $encodedFile): void
+    private function sendFileToHosting(int $fileId, array $hostings, EncodedFileData $encodedFile): void
     {
-        foreach ($hosts as $hosting) {
-            $hostedFileId = $this->fileHostRepository->create(
+        foreach ($hostings as $hosting) {
+            $fileHostingId = $this->fileHostRepository->create(
                 new CreateHostedFileData(
                     $fileId,
                     $hosting->id,
@@ -139,7 +143,7 @@ class UploadFileAction
             $this->sendFileToHostingJob->setArgs(
                 new SendFileToHostingData(
                     $hosting->slug,
-                    $hostedFileId,
+                    $fileHostingId,
                     $encodedFile,
                 )
             )->dispatch();
@@ -182,13 +186,13 @@ class UploadFileAction
      */
     private function queryHostingByIds(array $hostingSlugInPayload): array
     {
-        $hosts = $this->hostingRepository->queryBySlugs($hostingSlugInPayload);
-        $hostsFound = array_column($hosts, 'slug');
+        $hostings = $this->hostingRepository->queryBySlugs($hostingSlugInPayload);
+        $hostingsFound = array_column($hostings, 'slug');
 
-        if ($hostsNotFound = array_diff($hostingSlugInPayload, $hostsFound)) {
-            throw HostingNotFoundException::fromHostingNotFound($hostsNotFound);
+        if ($hostingsNotFound = array_diff($hostingSlugInPayload, $hostingsFound)) {
+            throw HostingNotFoundException::fromHostingNotFound($hostingsNotFound);
         }
 
-        return $hosts;
+        return $hostings;
     }
 }

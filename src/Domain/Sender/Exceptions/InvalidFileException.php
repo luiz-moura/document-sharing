@@ -31,7 +31,7 @@ class InvalidFileException extends Exception
         };
 
         return new self(
-            sprintf('Error uploading file %s: %s', $filename, $message)
+            sprintf('Error uploading file: %s, %s', $filename, $message)
         );
     }
 }

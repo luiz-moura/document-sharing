@@ -32,7 +32,7 @@ class UploadFileActionTest extends TestCase
 {
     private Generator $faker;
     private MockObject|FileRepository $fileRepository;
-    private MockObject|HostedFileRepository $hostedFileRepository;
+    private MockObject|HostedFileRepository $fileHostingRepository;
     private MockObject|HostingRepository $hostingRepository;
     private MockObject|SendFileToHostingJob $sendFileToHostingJob;
     private MockObject|UuidGeneratorService $uuidGeneratorService;
@@ -46,7 +46,7 @@ class UploadFileActionTest extends TestCase
         $this->faker = faker();
 
         $this->fileRepository = $this->createMock(FileRepository::class);
-        $this->hostedFileRepository = $this->createMock(HostedFileRepository::class);
+        $this->fileHostingRepository = $this->createMock(HostedFileRepository::class);
         $this->hostingRepository = $this->createMock(HostingRepository::class);
         $this->sendFileToHostingJob = $this->createMock(SendFileToHostingJob::class);
         $this->uuidGeneratorService = $this->createMock(UuidGeneratorService::class);
@@ -54,7 +54,7 @@ class UploadFileActionTest extends TestCase
 
         $this->sut = new UploadFileAction(
             $this->fileRepository,
-            $this->hostedFileRepository,
+            $this->fileHostingRepository,
             $this->hostingRepository,
             $this->sendFileToHostingJob,
             $this->uuidGeneratorService,
@@ -79,7 +79,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('create');
 
-        $this->hostedFileRepository
+        $this->fileHostingRepository
             ->expects($this->never())
             ->method('create');
 
@@ -126,7 +126,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('create');
 
-        $this->hostedFileRepository
+        $this->fileHostingRepository
             ->expects($this->never())
             ->method('create');
 
@@ -173,7 +173,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('create');
 
-        $this->hostedFileRepository
+        $this->fileHostingRepository
             ->expects($this->never())
             ->method('create');
 
@@ -229,7 +229,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('create');
 
-        $this->hostedFileRepository
+        $this->fileHostingRepository
             ->expects($this->never())
             ->method('create');
 
@@ -287,7 +287,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('create');
 
-        $this->hostedFileRepository
+        $this->fileHostingRepository
             ->expects($this->never())
             ->method('create');
 
@@ -371,7 +371,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('zipFiles');
 
-        $this->hostedFileRepository
+        $this->fileHostingRepository
             ->expects($this->exactly(2))
             ->method('create')
             ->with(

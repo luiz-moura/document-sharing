@@ -22,7 +22,7 @@ class SendFileToHostingActionTest extends TestCase
 {
     private MockObject|FileSenderFactory $fileSenderFactory;
     private MockObject|FileSenderService $fileSenderService;
-    private MockObject|HostedFileRepository $hostedFileRepository;
+    private MockObject|HostedFileRepository $fileHostingRepository;
     private MockObject|LoggerInterface $logger;
     private SendFileToHostingAction $sut;
 
@@ -32,11 +32,11 @@ class SendFileToHostingActionTest extends TestCase
 
         $this->fileSenderFactory = $this->createMock(FileSenderFactory::class);
         $this->fileSenderService = $this->createMock(FileSenderService::class);
-        $this->hostedFileRepository = $this->createMock(HostedFileRepository::class);
+        $this->fileHostingRepository = $this->createMock(HostedFileRepository::class);
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->sut = new SendFileToHostingAction(
-            $this->hostedFileRepository,
+            $this->fileHostingRepository,
             $this->fileSenderFactory,
             $this->logger,
         );
@@ -48,12 +48,12 @@ class SendFileToHostingActionTest extends TestCase
 
         $hostedFile = HostedFileDataFactory::create();
         $updateAccessLinkHostedFile = new UpdateAccessLinkHostedFileData(
-            externalFileId: $hostedFile->fileId,
+            externalId: $hostedFile->fileId,
             webViewLink: $hostedFile->webViewLink,
             webContentLink: $hostedFile->webContentLink,
         );
 
-        $this->hostedFileRepository
+        $this->fileHostingRepository
             ->expects($this->once())
             ->method('updateStatus')
             ->with($sendFileToHosting->hostedFileId, FileStatusOnHostEnum::PROCESSING);
@@ -70,7 +70,7 @@ class SendFileToHostingActionTest extends TestCase
             ->with($sendFileToHosting->encodedFile)
             ->willReturn($hostedFile);
 
-        $this->hostedFileRepository
+        $this->fileHostingRepository
             ->expects($this->once())
             ->method('updateAccessLink')
             ->with(
@@ -85,7 +85,7 @@ class SendFileToHostingActionTest extends TestCase
     {
         $sendFileToHosting = SendFileToHostingDataFactory::create();
 
-        $this->hostedFileRepository
+        $this->fileHostingRepository
             ->expects($this->exactly(2))
             ->method('updateStatus')
             ->with(

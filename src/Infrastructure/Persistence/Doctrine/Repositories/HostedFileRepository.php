@@ -34,7 +34,7 @@ class HostedFileRepository extends EntityRepository implements HostedFileReposit
         $hostedFileEntity->setStatus($hostedFile->status)
             ->setWebContentLink($hostedFile->webContentLink)
             ->setWebViewLink($hostedFile->webViewLink)
-            ->setExternalFileId($hostedFile->externalFileId);
+            ->setExternalFileId($hostedFile->externalId);
 
         $this->getEntityManager()->persist($hostedFileEntity);
         $this->getEntityManager()->flush();

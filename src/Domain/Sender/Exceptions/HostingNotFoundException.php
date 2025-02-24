@@ -17,9 +17,9 @@ class HostingNotFoundException extends Exception
         );
     }
 
-    public static function fromHostingNotFound(array $hosts): self
+    public static function fromHostingNotFound(array $hostings): self
     {
-        $message = sprintf('Hosting not found: %s', implode(', ', $hosts));
+        $message = sprintf('Hosting not found: %s', implode(', ', $hostings));
 
         return new self($message);
     }

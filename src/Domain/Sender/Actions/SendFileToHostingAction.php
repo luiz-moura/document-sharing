@@ -16,7 +16,7 @@ use Throwable;
 class SendFileToHostingAction
 {
     public function __construct(
-        private readonly HostedFileRepository $hostedFileRepository,
+        private readonly HostedFileRepository $fileHostingRepository,
         private readonly FileSenderFactory $fileSenderFactory,
         private readonly LoggerInterface $logger,
     ) {
@@ -24,7 +24,7 @@ class SendFileToHostingAction
 
     public function __invoke(SendFileToHostingData $sendFileToHosting): void
     {
-        $this->hostedFileRepository->updateStatus(
+        $this->fileHostingRepository->updateStatus(
             $sendFileToHosting->hostedFileId,
             FileStatusOnHostEnum::PROCESSING
         );
@@ -47,7 +47,7 @@ class SendFileToHostingAction
                 'exception' => $exception,
             ]);
 
-            $this->hostedFileRepository->updateStatus(
+            $this->fileHostingRepository->updateStatus(
                 $sendFileToHosting->hostedFileId,
                 FileStatusOnHostEnum::SEND_FAILURE
             );
@@ -55,10 +55,10 @@ class SendFileToHostingAction
             throw new FailedToUploadFileToHostingException(previous: $exception);
         }
 
-        $this->hostedFileRepository->updateAccessLink(
+        $this->fileHostingRepository->updateAccessLink(
             $sendFileToHosting->hostedFileId,
             new UpdateAccessLinkHostedFileData(
-                externalFileId: $hostedFile->fileId,
+                externalId: $hostedFile->fileId,
                 webViewLink: $hostedFile->webViewLink,
                 webContentLink: $hostedFile->webContentLink,
             )

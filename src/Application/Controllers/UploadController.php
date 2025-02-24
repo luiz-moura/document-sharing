@@ -23,7 +23,7 @@ class UploadController
         $uploadRequest = new UploadRequestData(
             hostingSlugs: $request->getParsedBody()['hosting_slugs'] ?? [],
             uploadedFiles: $request->getUploadedFiles()['files'] ?? [],
-            shouldZip: $request->getParsedBody()['should_zip'] ? filter_var($request->getParsedBody()['should_zip'], FILTER_VALIDATE_BOOLEAN) : false,
+            shouldZip: filter_var($request->getParsedBody()['should_zip'] ?? false, FILTER_VALIDATE_BOOLEAN),
         );
 
         $fileUuid = ($this->uploadFileAction)($uploadRequest);
