@@ -23,5 +23,6 @@ class UploadRequestData extends DataTransferObject
         public readonly array $uploadedFiles,
         public readonly bool $shouldZip,
     ) {
+        parent::__construct();
     }
 }
