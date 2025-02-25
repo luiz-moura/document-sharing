@@ -26,7 +26,7 @@ class UploadFileAction
 {
     public function __construct(
         private readonly FileRepository $fileRepository,
-        private readonly HostedFileRepository $fileHostRepository,
+        private readonly HostedFileRepository $fileHostingRepository,
         private readonly HostingRepository $hostingRepository,
         private readonly UuidGeneratorService $uuidGeneratorService,
         private readonly ZipFileService $zipFileService,
@@ -135,7 +135,7 @@ class UploadFileAction
     private function sendFileToHosting(int $fileId, array $hostings, EncodedFileData $encodedFile): void
     {
         foreach ($hostings as $hosting) {
-            $fileHostingId = $this->fileHostRepository->create(
+            $fileHostingId = $this->fileHostingRepository->create(
                 new CreateHostedFileData(
                     $fileId,
                     $hosting->id,

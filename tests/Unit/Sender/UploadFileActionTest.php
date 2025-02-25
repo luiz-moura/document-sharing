@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Sender;
 
 use App\Domain\Common\Adapters\Contracts\UuidGeneratorService;
+use App\Domain\Common\Queue\Dispatcher;
 use App\Domain\Sender\Actions\UploadFileAction;
 use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileRepository;
@@ -34,9 +35,10 @@ class UploadFileActionTest extends TestCase
     private MockObject|FileRepository $fileRepository;
     private MockObject|HostedFileRepository $fileHostingRepository;
     private MockObject|HostingRepository $hostingRepository;
-    private MockObject|SendFileToHostingJob $sendFileToHostingJob;
     private MockObject|UuidGeneratorService $uuidGeneratorService;
     private MockObject|ZipFileService $zipFileService;
+    private MockObject|SendFileToHostingJob $sendFileToHostingJob;
+    private MockObject|Dispatcher $dispatcher;
     private UploadFileAction $sut;
 
     protected function setUp(): void
@@ -48,23 +50,25 @@ class UploadFileActionTest extends TestCase
         $this->fileRepository = $this->createMock(FileRepository::class);
         $this->fileHostingRepository = $this->createMock(HostedFileRepository::class);
         $this->hostingRepository = $this->createMock(HostingRepository::class);
-        $this->sendFileToHostingJob = $this->createMock(SendFileToHostingJob::class);
         $this->uuidGeneratorService = $this->createMock(UuidGeneratorService::class);
         $this->zipFileService = $this->createMock(ZipFileService::class);
+        $this->sendFileToHostingJob = $this->createMock(SendFileToHostingJob::class);
+        $this->dispatcher = $this->createMock(Dispatcher::class);
 
         $this->sut = new UploadFileAction(
             $this->fileRepository,
             $this->fileHostingRepository,
             $this->hostingRepository,
-            $this->sendFileToHostingJob,
             $this->uuidGeneratorService,
             $this->zipFileService,
+            $this->sendFileToHostingJob,
+            $this->dispatcher,
         );
     }
 
     public function testShouldFailWhenTheFileIsInError(): void
     {
-        $hostingSlug = [$this->faker->randomDigitNotZero(), $this->faker->slug(1)];
+        $hostingSlug = [$this->faker->slug(1), $this->faker->slug(1)];
         $uploadedFile = UploadedFileFactory::create(['error' => UPLOAD_ERR_CANT_WRITE]);
 
         $this->hostingRepository
@@ -85,11 +89,15 @@ class UploadFileActionTest extends TestCase
 
         $this->sendFileToHostingJob
             ->expects($this->never())
-            ->method('dispatch');
+            ->method('setArgs');
 
         $this->zipFileService
             ->expects($this->never())
             ->method('zipFiles');
+
+        $this->dispatcher
+            ->expects($this->never())
+            ->method('dispatch');
 
         $this->expectException(InvalidFileException::class);
         $this->expectExceptionMessage('Failed to write file to disk.');
@@ -112,7 +120,7 @@ class UploadFileActionTest extends TestCase
             'type' => $fileType
         ]);
 
-        $hostingSlug = [$this->faker->randomDigitNotZero(), $this->faker->slug(1)];
+        $hostingSlug = [$this->faker->slug(1), $this->faker->slug(1)];
 
         $this->hostingRepository
             ->expects($this->never())
@@ -132,11 +140,15 @@ class UploadFileActionTest extends TestCase
 
         $this->sendFileToHostingJob
             ->expects($this->never())
-            ->method('dispatch');
+            ->method('setArgs');
 
         $this->zipFileService
             ->expects($this->never())
             ->method('zipFiles');
+
+        $this->dispatcher
+            ->expects($this->never())
+            ->method('dispatch');
 
         $this->expectException(InvalidFileException::class);
         $this->expectExceptionMessage('File size is too large');
@@ -159,7 +171,7 @@ class UploadFileActionTest extends TestCase
             'type' => $fileType
         ]);
 
-        $hostingSlug = [$this->faker->randomDigitNotZero(), $this->faker->slug(1)];
+        $hostingSlug = [$this->faker->slug(1), $this->faker->slug(1)];
 
         $this->hostingRepository
             ->expects($this->never())
@@ -179,11 +191,15 @@ class UploadFileActionTest extends TestCase
 
         $this->sendFileToHostingJob
             ->expects($this->never())
-            ->method('dispatch');
+            ->method('setArgs');
 
         $this->zipFileService
             ->expects($this->never())
             ->method('zipFiles');
+
+        $this->dispatcher
+            ->expects($this->never())
+            ->method('dispatch');
 
         $this->expectException(InvalidFileException::class);
         $this->expectExceptionMessage('Invalid file type');
@@ -235,11 +251,15 @@ class UploadFileActionTest extends TestCase
 
         $this->sendFileToHostingJob
             ->expects($this->never())
-            ->method('dispatch');
+            ->method('setArgs');
 
         $this->zipFileService
             ->expects($this->never())
             ->method('zipFiles');
+
+        $this->dispatcher
+            ->expects($this->never())
+            ->method('dispatch');
 
         $this->expectException(InvalidFileException::class);
         $this->expectExceptionMessage('Invalid file content');
@@ -293,11 +313,15 @@ class UploadFileActionTest extends TestCase
 
         $this->sendFileToHostingJob
             ->expects($this->never())
-            ->method('dispatch');
+            ->method('setArgs');
 
         $this->zipFileService
             ->expects($this->never())
             ->method('zipFiles');
+
+        $this->dispatcher
+            ->expects($this->never())
+            ->method('dispatch');
 
         $this->expectException(HostingNotFoundException::class);
 
@@ -412,7 +436,7 @@ class UploadFileActionTest extends TestCase
                 )
             )->willReturnSelf();
 
-        $this->sendFileToHostingJob
+        $this->dispatcher
             ->expects($this->exactly(2))
             ->method('dispatch');
 
