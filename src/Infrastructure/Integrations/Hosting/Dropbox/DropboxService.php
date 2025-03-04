@@ -24,7 +24,7 @@ class DropboxService implements FileSenderService
     {
         $this->logger->info(sprintf('[%s] Uploading file to Dropbox.', __METHOD__), [
             'filename' => $encodedFile->filename,
-            'mediaType' => $encodedFile->mediaType,
+            'mime_type' => $encodedFile->mimeType,
             'size' => $encodedFile->size,
         ]);
 
@@ -43,7 +43,7 @@ class DropboxService implements FileSenderService
         } catch (Throwable $exception) {
             $this->logger->error(sprintf('[%s] Failed to upload file to Dropbox.', __METHOD__), [
                 'file' => $encodedFile->filename,
-                'mediaType' => $encodedFile->mediaType,
+                'mime_type' => $encodedFile->mimeType,
                 'size' => $encodedFile->size,
                 'exception' => $exception,
             ]);

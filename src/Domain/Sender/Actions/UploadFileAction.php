@@ -24,6 +24,8 @@ use Psr\Http\Message\UploadedFileInterface;
 
 class UploadFileAction
 {
+    public const array ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png'];
+
     public function __construct(
         private readonly FileRepository $fileRepository,
         private readonly HostedFileRepository $fileHostingRepository,
@@ -57,26 +59,28 @@ class UploadFileAction
      */
     private function zipFiles(array $uploadedFiles, array $hostings): string
     {
+        $uploadDir = __DIR__ . '/../../../../storage/uploads';
+
         $fileUuid = $this->uuidGeneratorService->generateUuid();
         $filename = $this->generateFilename($fileUuid);
-        $filepath = $this->zipFileService->zipFiles($uploadedFiles, __DIR__ . '/../../../../storage/uploads', $filename);
+        $filepath = $this->zipFileService->zipFiles($uploadedFiles, $uploadDir, $filename);
         $filesize = filesize($filepath);
-        $mediaType = mime_content_type($filepath);
+        $mimeType = mime_content_type($filepath);
 
         $fileId = $this->fileRepository->create(
             new CreateFileData(
                 $fileUuid,
                 $filepath,
+                $mimeType,
                 $filesize,
-                $mediaType,
             )
         );
 
         $encodedFile = new EncodedFileData(
-            $filepath,
-            $mediaType,
-            $filesize,
             base64_encode(file_get_contents($filepath)),
+            $filepath,
+            $mimeType,
+            $filesize,
         );
 
         $this->sendFileToHosting($fileId, $hostings, $encodedFile);
@@ -108,8 +112,8 @@ class UploadFileAction
                 new CreateFileData(
                     $fileUuid,
                     $uploadedFile->getClientFilename(),
-                    $uploadedFile->getSize(),
                     $uploadedFile->getClientMediaType(),
+                    $uploadedFile->getSize(),
                 )
             );
 
@@ -117,10 +121,10 @@ class UploadFileAction
             $stream->rewind();
 
             $encodedFile = new EncodedFileData(
+                base64_encode($stream->getContents()),
                 $uploadedFile->getClientFilename(),
                 $uploadedFile->getClientMediaType(),
                 $uploadedFile->getSize(),
-                base64_encode($stream->getContents()),
             );
 
             $this->sendFileToHosting($fileId, $hostings, $encodedFile);
@@ -176,8 +180,7 @@ class UploadFileAction
                 throw new InvalidFileException(sprintf('File size is too large, filename: %s', $filename));
             }
 
-            $allowedMimeTypes = ['image/jpeg', 'image/png'];
-            if (! in_array($uploadedFile->getClientMediaType(), $allowedMimeTypes)) {
+            if (! in_array($uploadedFile->getClientMediaType(), self::ALLOWED_MIME_TYPES)) {
                 throw new InvalidFileException(sprintf('Invalid file type, filename: %s', $filename));
             }
         });
@@ -185,8 +188,8 @@ class UploadFileAction
 
     /**
      * @param string[] $hostingSlugInPayload
-     * @return HostingData[]
      * @throws HostingNotFoundException
+     * @return HostingData[]
      */
     private function queryHostingByIds(array $hostingSlugInPayload): array
     {

@@ -15,7 +15,7 @@ class FileRepository extends EntityRepository implements FileRepositoryContract
     {
         $fileEntity = new FileEntity(
             $file->uuid,
-            $file->name,
+            $file->filename,
             $file->size,
             $file->mimeType,
         );

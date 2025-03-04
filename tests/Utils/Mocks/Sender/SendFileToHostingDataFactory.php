@@ -27,10 +27,10 @@ class SendFileToHostingDataFactory extends MockFactory
             'hostingSlug' => $faker->slug(),
             'hostedFileId' => $faker->randomDigitNotZero(),
             'encodedFile' => new EncodedFileData(
-                filename: $faker->word(),
-                mediaType: $faker->mimeType(),
-                size: $faker->randomNumber(),
                 base64: $faker->sha256(),
+                filename: $faker->word(),
+                mimeType: $faker->mimeType(),
+                size: $faker->randomNumber(),
             ),
         ];
     }

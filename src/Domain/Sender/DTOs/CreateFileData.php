@@ -8,9 +8,9 @@ class CreateFileData
 {
     public function __construct(
         public readonly string $uuid,
-        public readonly string $name,
-        public readonly int $size,
+        public readonly string $filename,
         public readonly string $mimeType,
+        public readonly int $size,
     ) {
     }
 }
