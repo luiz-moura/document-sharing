@@ -10,7 +10,7 @@ use Throwable;
 
 class FailedToUploadFileToHostingException extends Exception
 {
-    public function __construct(Throwable $previous = null)
+    public function __construct(?Throwable $previous = null)
     {
         parent::__construct(
             'Failed to upload file to hosting.',
