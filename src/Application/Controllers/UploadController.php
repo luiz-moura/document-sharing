@@ -26,7 +26,7 @@ class UploadController
         $uploadRequest = new UploadRequestData(
             hostingSlugs: $request->getParsedBody()['hosting_slugs'],
             uploadedFiles: $request->getUploadedFiles()['files'],
-            shouldZip: $request->getParsedBody()['should_zip'],
+            shouldZip: filter_var($request->getParsedBody()['should_zip'] ?? false, FILTER_VALIDATE_BOOLEAN),
         );
 
         $fileUuid = ($this->uploadFileAction)($uploadRequest);
@@ -49,10 +49,6 @@ class UploadController
 
         if (! isset($parsedBody['hosting_slugs']) || ! is_array($parsedBody['hosting_slugs'])) {
             throw new InvalidArgumentException('hosting_slugs must be an array');
-        }
-
-        if (! isset($parsedBody['should_zip']) || ! is_bool($parsedBody['should_zip'])) {
-            throw new InvalidArgumentException('should_zip must be a boolean');
         }
 
         if (! isset($request->getUploadedFiles()['files'])) {

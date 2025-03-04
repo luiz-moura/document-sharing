@@ -29,8 +29,10 @@ return function (ContainerBuilder $containerBuilder): void {
 
             return $logger;
         },
-        EntityManagerInterface::class => function (): EntityManagerInterface {
-            $em = require __DIR__ . '/../src/Infrastructure/Persistence/Doctrine/entity-manager.php';
+        EntityManagerInterface::class => function (ContainerInterface $c): EntityManagerInterface {
+            $settings = $c->get(SettingsInterface::class);
+
+            $em = require $settings->get('database.em_path');
 
             return $em;
         },

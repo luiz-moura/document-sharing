@@ -2,6 +2,7 @@
 
 require __DIR__ . '/../../../../app/bootstrap.php';
 
+use App\Application\Settings\SettingsInterface;
 use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
 use Doctrine\ORM\Tools\Console\ConsoleRunner;
 use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
@@ -9,11 +10,12 @@ use Doctrine\Migrations\Tools\Console\Command;
 use Doctrine\Migrations\DependencyFactory;
 use Doctrine\Migrations\Configuration\Migration\PhpFile;
 
+/** @var SettingsInterface $settings */
+
 /** @var \Doctrine\ORM\EntityManager $entityManager */
 $entityManager = require __DIR__ . '/entity-manager.php';
 
-$path = realpath(__DIR__ . '/../../../../config/migrations.php');
-$config = new PhpFile($path);
+$config = new PhpFile($settings->get('database.doctrine'));
 $dependencyFactory = DependencyFactory::fromEntityManager(
     $config,
     new ExistingEntityManager($entityManager)

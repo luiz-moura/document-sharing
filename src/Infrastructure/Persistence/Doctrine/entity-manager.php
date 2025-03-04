@@ -18,6 +18,6 @@ $ormSetup = ORMSetup::createAttributeMetadataConfiguration(
     isDevMode: $settings->get('app.env') === 'dev',
 );
 
-$connection = DriverManager::getConnection($settings->get('database.doctrine'), $ormSetup);
+$connection = DriverManager::getConnection($settings->get('database'), $ormSetup);
 
 return new EntityManager($connection, $ormSetup);
