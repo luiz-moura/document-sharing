@@ -7,8 +7,12 @@ use Ramsey\Uuid\Uuid;
 
 class UuidGeneratorService implements UuidGeneratorServiceContract
 {
+    public function __construct(private Uuid $uuid)
+    {
+    }
+
     public function generateUuid(): string
     {
-        return Uuid::uuid4()->toString();
+        return $this->uuid->uuid4()->toString();
     }
 }
