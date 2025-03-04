@@ -22,7 +22,7 @@ return function (ContainerBuilder $containerBuilder): void {
                 ...(function (): array {
                     $configs = [];
 
-                    $files = glob("../config/*.php");
+                    $files = glob(__DIR__ . "/../config/*.php");
 
                     foreach ($files as $file) {
                         $filename = basename($file, '.php');
