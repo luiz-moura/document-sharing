@@ -9,9 +9,7 @@ use Doctrine\Migrations\Tools\Console\Command;
 use Doctrine\Migrations\DependencyFactory;
 use Doctrine\Migrations\Configuration\Migration\PhpFile;
 
-/**
- * @var \Doctrine\ORM\EntityManager $entityManager
- */
+/** @var \Doctrine\ORM\EntityManager $entityManager */
 $entityManager = require __DIR__ . '/entity-manager.php';
 
 $path = realpath(__DIR__ . '/../../../../config/migrations.php');

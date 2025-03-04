@@ -1,10 +1,9 @@
 <?php
 
 return [
-    'max_retries' => $_ENV['QUEUE_MAX_RETRIES'] ?? 5,
-    'retry_delay_seconds' => $_ENV['QUEUE_RETRY_DELAY_SECONDS'] ?? 2,
-    'timeout' => $_ENV['DROPBOX_TIMEOUT'],
-
+    'max_retries' => $_ENV['HOST_MAX_RETRIES'] ?? 3,
+    'retry_delay_seconds' => $_ENV['HOST_RETRY_DELAY_SECONDS'] ?? 5,
+    'timeout' => $_ENV['HOST_TIMEOUT'] ?? 10,
     'dropbox' => [
         'uri' => $_ENV['DROPBOX_URI'],
         'app_key' => $_ENV['DROPBOX_APP_KEY'],
