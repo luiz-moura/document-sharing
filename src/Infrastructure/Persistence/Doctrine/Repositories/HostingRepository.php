@@ -37,13 +37,17 @@ class HostingRepository extends EntityRepository implements HostingRepositoryCon
         /** @var ?HostingEntity $entity */
         $entity = $this->findOneBy(['slug' => $slug]);
 
-        return $entity ? new HostingData(
+        if (is_null($entity)) {
+            return null;
+        }
+
+        return new HostingData(
             $entity->getId(),
             $entity->getSlug(),
             $entity->getName(),
             $entity->getRefreshableToken(),
             $entity->getAccessToken(),
-        ) : null;
+        );
     }
 
     public function updateRefreshableTokenBySlug(string $slug, string $refreshableToken): void
@@ -51,7 +55,7 @@ class HostingRepository extends EntityRepository implements HostingRepositoryCon
         /** @var ?HostingEntity $entity */
         $entity = $this->findOneBy(['slug' => $slug]);
 
-        if (! $entity) {
+        if (is_null($entity)) {
             throw new RuntimeException(sprintf('Hosting with slug %s not found', $slug));
         }
 
@@ -66,7 +70,7 @@ class HostingRepository extends EntityRepository implements HostingRepositoryCon
         /** @var ?HostingEntity $entity */
         $entity = $this->findOneBy(['slug' => $slug]);
 
-        if (! $entity) {
+        if (is_null($entity)) {
             throw new RuntimeException(sprintf('Hosting with slug %s not found', $slug));
         }
 
