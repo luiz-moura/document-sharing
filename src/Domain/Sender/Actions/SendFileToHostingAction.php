@@ -36,23 +36,7 @@ class SendFileToHostingAction
         try {
             $hostedFile = $fileSenderService->send($sendFileToHosting->encodedFile);
         } catch (Throwable $exception) {
-            $this->logger->error(sprintf('[%s] Failed to send file to service', __METHOD__), [
-                'hosting_slug' => $sendFileToHosting->hostingSlug,
-                'hosted_file_id' => $sendFileToHosting->hostedFileId,
-                'file' => [
-                    'filename' => $sendFileToHosting->encodedFile->filename,
-                    'media_type' => $sendFileToHosting->encodedFile->mediaType,
-                    'size' => $sendFileToHosting->encodedFile->size,
-                ],
-                'exception' => $exception,
-            ]);
-
-            $this->fileHostingRepository->updateStatus(
-                $sendFileToHosting->hostedFileId,
-                FileStatusOnHostEnum::SEND_FAILURE
-            );
-
-            throw new FailedToUploadFileToHostingException(previous: $exception);
+            $this->fail($exception, $sendFileToHosting);
         }
 
         $this->fileHostingRepository->updateAccessLink(
@@ -63,5 +47,24 @@ class SendFileToHostingAction
                 webContentLink: $hostedFile->webContentLink,
             )
         );
+    }
+
+    private function fail(Throwable $exception, SendFileToHostingData $sendFileToHosting): never
+    {
+        $this->logger->error(sprintf('[%s] Failed to send file to service', __METHOD__), [
+            'hosting_slug' => $sendFileToHosting->hostingSlug,
+            'hosted_file_id' => $sendFileToHosting->hostedFileId,
+            'filename' => $sendFileToHosting->encodedFile->filename,
+            'mime_type' => $sendFileToHosting->encodedFile->mimeType,
+            'size' => $sendFileToHosting->encodedFile->size,
+            'exception' => $exception,
+        ]);
+
+        $this->fileHostingRepository->updateStatus(
+            $sendFileToHosting->hostedFileId,
+            FileStatusOnHostEnum::SEND_FAILURE
+        );
+
+        throw new FailedToUploadFileToHostingException(previous: $exception);
     }
 }
