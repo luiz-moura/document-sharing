@@ -38,11 +38,11 @@ class InMemoryHostingRepository implements HostingRepository
 
     public function updateRefreshableTokenBySlug(string $slug, string $codeAccess): void
     {
-        // do nothing
+        sleep(1);
     }
 
     public function updateAccessTokenBySlug(string $slug, string $codeAccess): void
     {
-        // do nothing
+        sleep(1);
     }
 }

@@ -13,16 +13,18 @@ class InMemoryHostedFileRepository implements HostedFileRepository
 {
     public function create(CreateHostedFileData $hostedFile): int
     {
+        sleep(1);
+
         return 1;
     }
 
     public function updateAccessLink(int $hostedFileId, UpdateAccessLinkHostedFileData $hostedFile): void
     {
-        sleep(3);
+        sleep(1);
     }
 
     public function updateStatus(int $hostedFileId, FileStatusOnHostEnum $status): void
     {
-        sleep(3);
+        sleep(1);
     }
 }

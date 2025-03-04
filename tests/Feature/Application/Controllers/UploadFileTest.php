@@ -165,9 +165,9 @@ class UploadFileTest extends TestCase
 
     public function testShouldUploadTheFileSuccessfully(): void
     {
+        $filename = $this->faker->filePath() . '.' . $this->faker->fileExtension();
+        $mimeType = 'image/jpeg';
         $fileSize = 5 * 1024 * 1024; // 5MB
-        $fileType = 'image/jpeg';
-        $fileName = $this->faker->filePath() . '.' . $this->faker->fileExtension();
         $streamContent = 'any';
 
         $stream = $this->createMock(StreamInterface::class);
@@ -178,10 +178,10 @@ class UploadFileTest extends TestCase
         $uploadedFile = $this->createMock(UploadedFileInterface::class);
         $uploadedFile->expects($this->exactly(3))
             ->method('getClientFilename')
-            ->willReturn($fileName);
+            ->willReturn($filename);
         $uploadedFile->expects($this->exactly(3))
             ->method('getClientMediaType')
-            ->willReturn($fileType);
+            ->willReturn($mimeType);
         $uploadedFile->expects($this->exactly(4))
             ->method('getSize')
             ->willReturn($fileSize);
@@ -190,9 +190,9 @@ class UploadFileTest extends TestCase
             ->willReturn($stream);
 
         $createFile = CreateFileDataFactory::create([
-            'name' => $fileName,
+            'name' => $filename,
             'size' => $fileSize,
-            'mimeType' => $fileType,
+            'mimeType' => $mimeType,
         ]);
 
         $fileId = $this->faker->randomDigitNotZero();
@@ -235,10 +235,10 @@ class UploadFileTest extends TestCase
                     $googleDriveHosting->slug,
                     $hostedFileId,
                     new EncodedFileData(
-                        $fileName,
-                        $fileType,
-                        $fileSize,
                         $streamContent,
+                        $filename,
+                        $mimeType,
+                        $fileSize,
                     ),
                 )
             )->willReturn($this->sendFileToHostingJob->reveal())

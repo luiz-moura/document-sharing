@@ -114,10 +114,10 @@ class UploadFileActionTest extends TestCase
     public function testShouldFailWhenTheFileSizeIsGreatestThanAllowed(): void
     {
         $fileSize = 6 * 1024 * 1024; // 6MB
-        $fileType = 'image/png';
+        $mimeType = 'image/png';
         $uploadedFile = UploadedFileFactory::create([
             'size' => $fileSize,
-            'type' => $fileType
+            'type' => $mimeType
         ]);
 
         $hostingSlug = [$this->faker->slug(1), $this->faker->slug(1)];
@@ -165,10 +165,10 @@ class UploadFileActionTest extends TestCase
     public function testShouldFailWhenTheFileTypeIsNotAllowed(): void
     {
         $fileSize = 5 * 1024 * 1024; // 5MB
-        $fileType = 'image/gif';
+        $mimeType = 'image/gif';
         $uploadedFile = UploadedFileFactory::create([
             'size' => $fileSize,
-            'type' => $fileType
+            'type' => $mimeType
         ]);
 
         $hostingSlug = [$this->faker->slug(1), $this->faker->slug(1)];
@@ -276,7 +276,7 @@ class UploadFileActionTest extends TestCase
     public function testShouldFailWhenOneOrMoreHostingIsNotFound(): void
     {
         $fileSize = 5 * 1024 * 1024; // 5MB
-        $fileType = 'image/jpeg';
+        $mimeType = 'image/jpeg';
 
         $uploadedFile = $this->createMock(UploadedFileInterface::class);
         $uploadedFile->expects($this->once())
@@ -287,7 +287,7 @@ class UploadFileActionTest extends TestCase
             ->willReturn($fileSize);
         $uploadedFile->expects($this->once())
             ->method('getClientMediaType')
-            ->willReturn($fileType);
+            ->willReturn($mimeType);
         $uploadedFile->expects($this->never())
             ->method('getStream');
 
@@ -336,9 +336,9 @@ class UploadFileActionTest extends TestCase
 
     public function testShouldUploadTheFileSuccessfully(): void
     {
+        $filename = $this->faker->filePath() . '.' . $this->faker->fileExtension();
+        $mimeType = 'image/jpeg';
         $fileSize = 5 * 1024 * 1024; // 5MB
-        $fileType = 'image/jpeg';
-        $fileName = $this->faker->filePath() . '.' . $this->faker->fileExtension();
         $streamContent = 'any';
 
         $stream = $this->createMock(StreamInterface::class);
@@ -351,10 +351,10 @@ class UploadFileActionTest extends TestCase
         $uploadedFile = $this->createMock(UploadedFileInterface::class);
         $uploadedFile->expects($this->exactly(3))
             ->method('getClientFilename')
-            ->willReturn($fileName);
+            ->willReturn($filename);
         $uploadedFile->expects($this->exactly(3))
             ->method('getClientMediaType')
-            ->willReturn($fileType);
+            ->willReturn($mimeType);
         $uploadedFile->expects($this->exactly(4))
             ->method('getSize')
             ->willReturn($fileSize);
@@ -363,9 +363,9 @@ class UploadFileActionTest extends TestCase
             ->willReturn($stream);
 
         $createFile = CreateFileDataFactory::create([
-            'name' => $fileName,
+            'name' => $filename,
             'size' => $fileSize,
-            'mimeType' => $fileType,
+            'mimeType' => $mimeType,
         ]);
 
         $fileId = $this->faker->randomDigitNotZero();
@@ -417,20 +417,20 @@ class UploadFileActionTest extends TestCase
                         $googleDriveHosting->slug,
                         $hostedFileIds[0],
                         new EncodedFileData(
-                            $fileName,
-                            $fileType,
-                            $fileSize,
                             base64_encode($streamContent),
+                            $filename,
+                            $mimeType,
+                            $fileSize,
                         ),
                     ),
                     new SendFileToHostingData(
                         $dropboxHosting->slug,
                         $hostedFileIds[1],
                         new EncodedFileData(
-                            $fileName,
-                            $fileType,
-                            $fileSize,
                             base64_encode($streamContent),
+                            $filename,
+                            $mimeType,
+                            $fileSize,
                         ),
                     ),
                 )
