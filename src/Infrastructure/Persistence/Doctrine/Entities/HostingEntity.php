@@ -28,6 +28,7 @@ class HostingEntity
     #[ORM\Column(
         name: 'access_token',
         type: 'string',
+        length: 2000,
         nullable: true,
     )]
     private ?string $accessToken = null;
@@ -35,6 +36,7 @@ class HostingEntity
     #[ORM\Column(
         name: 'refreshable_token',
         type: 'string',
+        length: 2000,
         nullable: true,
     )]
     private ?string $refreshableToken = null;
