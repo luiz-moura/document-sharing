@@ -59,13 +59,12 @@ class UploadFileAction
      */
     private function zipFiles(array $uploadedFiles, array $hostings): string
     {
-        $uploadDir = __DIR__ . '/../../../../storage/uploads';
-
         $fileUuid = $this->uuidGeneratorService->generateUuid();
         $filename = $this->generateFilename($fileUuid);
-        $filepath = $this->zipFileService->zipFiles($uploadedFiles, $uploadDir, $filename);
-        $filesize = filesize($filepath);
-        $mimeType = mime_content_type($filepath);
+
+        $binary = $this->zipFileService->zipFiles($uploadedFiles);
+        $filesize = strlen($binary);
+        $mimeType = 'application/zip';
 
         $fileId = $this->fileRepository->create(
             new CreateFileData(
@@ -77,15 +76,13 @@ class UploadFileAction
         );
 
         $encodedFile = new EncodedFileData(
-            base64_encode(file_get_contents($filepath)),
-            $filepath,
+            base64_encode($binary),
+            $filename,
             $mimeType,
             $filesize,
         );
 
         $this->sendFileToHosting($fileId, $hostings, $encodedFile);
-
-        unlink($filepath);
 
         return $fileUuid;
     }

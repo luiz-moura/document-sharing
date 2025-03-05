@@ -10,7 +10,7 @@ use ZipArchive;
 
 class ZipFileException extends Exception
 {
-    public function __construct(string $message = 'File not sent.')
+    public function __construct(string $message)
     {
         parent::__construct(
             $message,

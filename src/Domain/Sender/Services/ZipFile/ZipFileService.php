@@ -8,26 +8,40 @@ use ZipArchive;
 
 class ZipFileService
 {
+    private ZipArchive $zipArchive;
+
+    public function __construct()
+    {
+        $this->zipArchive = new ZipArchive();
+    }
+
     /**
      * @param UploadedFileInterface[] $files
      */
-    public function zipFiles(array $files, string $zipPath, string $zipName, ?string $zipPassword = null): string
+    public function zipFiles(array $files, ?string $zipPassword = null): string
     {
-        $path = sprintf('%s/%s', $zipPath, $zipName);
+        $temp = tmpfile();
+        $tempPath = stream_get_meta_data($temp)['uri'];
+        unlink($tempPath);
 
-        $zip = new ZipArchive();
-        if (! $zipArchiveErrorCode = $zip->open($path, ZipArchive::CREATE)) {
+        if (! $zipArchiveErrorCode = $this->zipArchive->open($tempPath, ZipArchive::CREATE)) {
             throw ZipFileException::fromErrorCode($zipArchiveErrorCode);
         }
 
         foreach ($files as $file) {
-            $zip->addFile($file->getStream()->getMetadata('uri'), $file->getClientFilename());
+            $this->zipArchive->addFile($file->getStream()->getMetadata('uri'), $file->getClientFilename());
         }
 
         if ($zipPassword) {
-            $zip->setPassword($zipPassword);
+            $this->zipArchive->setPassword($zipPassword);
         }
 
-        return $path;
+        $this->zipArchive->close();
+
+        $resource = fopen($tempPath, 'r');
+        $content = stream_get_contents($resource);
+        fclose($temp);
+
+        return $content;
     }
 }
