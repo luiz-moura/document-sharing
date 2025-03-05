@@ -70,7 +70,7 @@ class UploadFileAction
         $fileId = $this->fileRepository->create(
             new CreateFileData(
                 $fileUuid,
-                $filepath,
+                $filename,
                 $mimeType,
                 $filesize,
             )
@@ -84,6 +84,8 @@ class UploadFileAction
         );
 
         $this->sendFileToHosting($fileId, $hostings, $encodedFile);
+
+        unlink($filepath);
 
         return $fileUuid;
     }
