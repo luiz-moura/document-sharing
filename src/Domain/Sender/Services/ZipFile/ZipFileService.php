@@ -29,7 +29,8 @@ class ZipFileService
         }
 
         foreach ($files as $file) {
-            $this->zipArchive->addFile($file->getStream()->getMetadata('uri'), $file->getClientFilename());
+            $this->zipArchive->addFromString($file->getStream()->getMetadata('uri'), $file->getClientFilename());
+            $this->zipArchive->setCompressionName($file->getClientFilename(), ZipArchive::CM_DEFLATE);
         }
 
         if ($zipPassword) {
