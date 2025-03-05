@@ -20,7 +20,7 @@ return [
         ],
 
         'migrations_paths' => [
-            'Database\Migrations' => './src/Infrastructure/Persistence/Doctrine/Migrations',
+            'Database\Migrations' => __DIR__ . '/../src/Infrastructure/Persistence/Doctrine/Migrations',
         ],
 
         'all_or_nothing' => true,
