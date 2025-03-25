@@ -2,7 +2,7 @@ services:
     php-fpm:
         build:
             context: .
-            dockerfile: Dockerfile
+            dockerfile: ./.docker/php/Dockerfile
         working_dir: /var/www
         command: php -S 0.0.0.0:8080 -t public
         environment:
@@ -13,9 +13,13 @@ services:
             - postgres
         volumes:
             - .:/var/www
-            - logs:/var/www/logs
+            - ./logs:/var/www/logs
+            - ./.docker/php/conf.d/99-xdebug.ini:/usr/local/etc/php/conf.d/99-xdebug.ini
+            - ./.docker/php/conf.d/error_reporting.ini:/usr/local/etc/php/conf.d/error_reporting.ini
         networks:
             - document-sharing-network
+        extra_hosts:
+            - host.docker.internal:host-gateway
     postgres:
         image: postgres:16
         environment:
