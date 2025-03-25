@@ -7,12 +7,11 @@ use App\Infrastructure\Integrations\Hosting\Dropbox\Exceptions\AccessTokenNotDef
 use App\Infrastructure\Integrations\Hosting\Enums\HostingEnum;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
-use Spatie\Dropbox\TokenProvider;
 use GuzzleHttp\Exception\ClientException;
 use Fig\Http\Message\StatusCodeInterface as Status;
 use Spatie\Dropbox\RefreshableTokenProvider;
 
-class DropboxTokenProvider implements TokenProvider, RefreshableTokenProvider
+class DropboxTokenProvider implements RefreshableTokenProvider
 {
     protected const string TOKEN_CACHE = 'dropbox-access-token';
 

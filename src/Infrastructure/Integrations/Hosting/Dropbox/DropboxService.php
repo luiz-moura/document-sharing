@@ -5,12 +5,15 @@ namespace App\Infrastructure\Integrations\Hosting\Dropbox;
 use App\Domain\Sender\Contracts\FileSenderService;
 use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostedFileData;
+use App\Infrastructure\Integrations\Hosting\Traits\GenerateFilename;
 use Psr\Log\LoggerInterface;
 use Spatie\Dropbox\Client as DropboxClient;
 use Throwable;
 
 class DropboxService implements FileSenderService
 {
+    use GenerateFilename;
+
     private readonly DropboxClient $client;
 
     public function __construct(
@@ -57,17 +60,5 @@ class DropboxService implements FileSenderService
             webViewLink: $sharedLink['url'],
             webContentLink: str_replace('?dl=0', '?dl=1', $sharedLink['url'])
         );
-    }
-
-    protected function randomString(): string
-    {
-        return bin2hex(random_bytes(6));
-    }
-
-    private function generateFilename(string $filename): string
-    {
-        $pathInfo = pathinfo($filename);
-
-        return sprintf('/%s-%s.%s', $pathInfo['filename'], $this->randomString(), $pathInfo['extension']);
     }
 }
