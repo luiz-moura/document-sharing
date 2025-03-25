@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Sender\Services\ZipFile\Exceptions;
+namespace App\Domain\Sender\Services\ZipArchive\Exceptions;
 
 use Exception;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
 use ZipArchive;
 
-class ZipFileException extends Exception
+class ZipArchiveException extends Exception
 {
     public function __construct(string $message)
     {

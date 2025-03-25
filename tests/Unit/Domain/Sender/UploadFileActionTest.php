@@ -18,7 +18,7 @@ use App\Domain\Sender\DTOs\UploadRequestData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
 use App\Domain\Sender\Exceptions\InvalidFileException;
 use App\Domain\Sender\Jobs\SendFileToHostingJob;
-use App\Domain\Sender\Services\ZipFile\ZipFileService;
+use App\Domain\Sender\Services\ZipArchive\ZipArchiveService;
 use Faker\Generator;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -36,7 +36,7 @@ class UploadFileActionTest extends TestCase
     private MockObject|HostedFileRepository $fileHostingRepository;
     private MockObject|HostingRepository $hostingRepository;
     private MockObject|UuidGeneratorService $uuidGeneratorService;
-    private MockObject|ZipFileService $zipFileService;
+    private MockObject|ZipArchiveService $zipArchiveService;
     private MockObject|SendFileToHostingJob $sendFileToHostingJob;
     private MockObject|Dispatcher $dispatcher;
     private UploadFileAction $sut;
@@ -51,7 +51,7 @@ class UploadFileActionTest extends TestCase
         $this->fileHostingRepository = $this->createMock(HostedFileRepository::class);
         $this->hostingRepository = $this->createMock(HostingRepository::class);
         $this->uuidGeneratorService = $this->createMock(UuidGeneratorService::class);
-        $this->zipFileService = $this->createMock(ZipFileService::class);
+        $this->zipArchiveService = $this->createMock(ZipArchiveService::class);
         $this->sendFileToHostingJob = $this->createMock(SendFileToHostingJob::class);
         $this->dispatcher = $this->createMock(Dispatcher::class);
 
@@ -60,7 +60,7 @@ class UploadFileActionTest extends TestCase
             $this->fileHostingRepository,
             $this->hostingRepository,
             $this->uuidGeneratorService,
-            $this->zipFileService,
+            $this->zipArchiveService,
             $this->sendFileToHostingJob,
             $this->dispatcher,
         );
@@ -91,9 +91,9 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('setArgs');
 
-        $this->zipFileService
+        $this->zipArchiveService
             ->expects($this->never())
-            ->method('zipFiles');
+            ->method('zipArchive');
 
         $this->dispatcher
             ->expects($this->never())
@@ -142,9 +142,9 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('setArgs');
 
-        $this->zipFileService
+        $this->zipArchiveService
             ->expects($this->never())
-            ->method('zipFiles');
+            ->method('zipArchive');
 
         $this->dispatcher
             ->expects($this->never())
@@ -193,9 +193,9 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('setArgs');
 
-        $this->zipFileService
+        $this->zipArchiveService
             ->expects($this->never())
-            ->method('zipFiles');
+            ->method('zipArchive');
 
         $this->dispatcher
             ->expects($this->never())
@@ -253,9 +253,9 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('setArgs');
 
-        $this->zipFileService
+        $this->zipArchiveService
             ->expects($this->never())
-            ->method('zipFiles');
+            ->method('zipArchive');
 
         $this->dispatcher
             ->expects($this->never())
@@ -315,9 +315,9 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('setArgs');
 
-        $this->zipFileService
+        $this->zipArchiveService
             ->expects($this->never())
-            ->method('zipFiles');
+            ->method('zipArchive');
 
         $this->dispatcher
             ->expects($this->never())
@@ -391,9 +391,9 @@ class UploadFileActionTest extends TestCase
             ->with($createFile)
             ->willReturn($fileId);
 
-        $this->zipFileService
+        $this->zipArchiveService
             ->expects($this->never())
-            ->method('zipFiles');
+            ->method('zipArchive');
 
         $this->fileHostingRepository
             ->expects($this->exactly(2))

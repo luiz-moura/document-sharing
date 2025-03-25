@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Domain\Sender\Services\ZipFile;
+namespace App\Domain\Sender\Services\ZipArchive;
 
-use App\Domain\Sender\Services\ZipFile\Exceptions\ZipFileException;
+use App\Domain\Sender\Services\ZipArchive\Exceptions\ZipArchiveException;
 use Psr\Http\Message\UploadedFileInterface;
 use ZipArchive;
 
-class ZipFileService
+class ZipArchiveService
 {
     private ZipArchive $zipArchive;
 
@@ -18,14 +18,14 @@ class ZipFileService
     /**
      * @param UploadedFileInterface[] $files
      */
-    public function zipFiles(array $files, ?string $zipPassword = null): string
+    public function zipArchive(array $files, ?string $zipPassword = null): string
     {
         $temp = tmpfile();
         $tempPath = stream_get_meta_data($temp)['uri'];
         unlink($tempPath);
 
         if (! $zipArchiveErrorCode = $this->zipArchive->open($tempPath, ZipArchive::CREATE)) {
-            throw ZipFileException::fromErrorCode($zipArchiveErrorCode);
+            throw ZipArchiveException::fromErrorCode($zipArchiveErrorCode);
         }
 
         foreach ($files as $file) {

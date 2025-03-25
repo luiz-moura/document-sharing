@@ -18,7 +18,7 @@ use App\Domain\Sender\DTOs\UploadRequestData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
 use App\Domain\Sender\Exceptions\InvalidFileException;
 use App\Domain\Sender\Jobs\SendFileToHostingJob;
-use App\Domain\Sender\Services\ZipFile\ZipFileService;
+use App\Domain\Sender\Services\ZipArchive\ZipArchiveService;
 use DateTime;
 use Psr\Http\Message\UploadedFileInterface;
 
@@ -31,7 +31,7 @@ class UploadFileAction
         private readonly HostedFileRepository $fileHostingRepository,
         private readonly HostingRepository $hostingRepository,
         private readonly UuidGeneratorService $uuidGeneratorService,
-        private readonly ZipFileService $zipFileService,
+        private readonly ZipArchiveService $zipArchiveService,
         private readonly SendFileToHostingJob $sendFileToHostingJob,
         private readonly Dispatcher $dispatcher,
     ) {
@@ -47,7 +47,7 @@ class UploadFileAction
         $hostings = $this->queryHostingByIds($uploadRequest->hostingSlugs);
 
         if ($uploadRequest->shouldZip) {
-            return [$this->zipFiles($uploadRequest->uploadedFiles, $hostings)];
+            return [$this->zipArchive($uploadRequest->uploadedFiles, $hostings)];
         }
 
         return $this->sendIndividually($uploadRequest->uploadedFiles, $hostings);
@@ -57,12 +57,12 @@ class UploadFileAction
      * @param UploadedFileInterface[] $uploadedFiles
      * @param string[] $hostings
      */
-    private function zipFiles(array $uploadedFiles, array $hostings): string
+    private function zipArchive(array $uploadedFiles, array $hostings): string
     {
         $fileUuid = $this->uuidGeneratorService->generateUuid();
         $filename = $this->generateFilename($fileUuid);
 
-        $binary = $this->zipFileService->zipFiles($uploadedFiles);
+        $binary = $this->zipArchiveService->zipArchive($uploadedFiles);
         $filesize = strlen($binary);
         $mimeType = 'application/zip';
 

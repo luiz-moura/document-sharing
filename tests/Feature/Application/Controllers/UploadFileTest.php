@@ -15,7 +15,7 @@ use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\Jobs\SendFileToHostingJob;
-use App\Domain\Sender\Services\ZipFile\ZipFileService;
+use App\Domain\Sender\Services\ZipArchive\ZipArchiveService;
 use DI\Container;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
 use Faker\Generator;
@@ -39,7 +39,7 @@ class UploadFileTest extends TestCase
     private ObjectProphecy $fileHostingRepositoryProphecy;
     private ObjectProphecy $hostingRepositoryProphecy;
     private ObjectProphecy $uuidGeneratorService;
-    private ObjectProphecy $zipFileService;
+    private ObjectProphecy $zipArchiveService;
     private ObjectProphecy $sendFileToHostingJob;
     private ObjectProphecy $dispatcher;
 
@@ -56,7 +56,7 @@ class UploadFileTest extends TestCase
         $this->fileHostingRepositoryProphecy = $this->prophesize(HostedFileRepository::class);
         $this->hostingRepositoryProphecy = $this->prophesize(HostingRepository::class);
         $this->uuidGeneratorService = $this->prophesize(UuidGeneratorService::class);
-        $this->zipFileService = $this->prophesize(ZipFileService::class);
+        $this->zipArchiveService = $this->prophesize(ZipArchiveService::class);
         $this->sendFileToHostingJob = $this->prophesize(SendFileToHostingJob::class);
         $this->dispatcher = $this->prophesize(Dispatcher::class);
     }
@@ -76,7 +76,7 @@ class UploadFileTest extends TestCase
         $this->fileHostingRepositoryProphecy->create()->shouldNotBeCalled();
         $this->hostingRepositoryProphecy->queryBySlugs()->shouldNotBeCalled();
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
-        $this->zipFileService->zipFiles()->shouldNotBeCalled();
+        $this->zipArchiveService->zipArchive()->shouldNotBeCalled();
         $this->sendFileToHostingJob->setArgs()->shouldNotBeCalled();
         $this->dispatcher->dispatch()->shouldNotBeCalled();
 
@@ -108,7 +108,7 @@ class UploadFileTest extends TestCase
         $this->fileHostingRepositoryProphecy->create()->shouldNotBeCalled();
         $this->hostingRepositoryProphecy->queryBySlugs()->shouldNotBeCalled();
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
-        $this->zipFileService->zipFiles()->shouldNotBeCalled();
+        $this->zipArchiveService->zipArchive()->shouldNotBeCalled();
         $this->sendFileToHostingJob->setArgs()->shouldNotBeCalled();
         $this->dispatcher->dispatch()->shouldNotBeCalled();
 
@@ -142,7 +142,7 @@ class UploadFileTest extends TestCase
         $this->fileHostingRepositoryProphecy->create()->shouldNotBeCalled();
         $this->hostingRepositoryProphecy->queryBySlugs()->shouldNotBeCalled();
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
-        $this->zipFileService->zipFiles()->shouldNotBeCalled();
+        $this->zipArchiveService->zipArchive()->shouldNotBeCalled();
         $this->sendFileToHostingJob->setArgs()->shouldNotBeCalled();
         $this->dispatcher->dispatch()->shouldNotBeCalled();
 
@@ -225,8 +225,8 @@ class UploadFileTest extends TestCase
             ->willReturn($hostedFileId)
             ->shouldBeCalledOnce();
 
-        $this->zipFileService
-            ->zipFiles([$uploadedFile])
+        $this->zipArchiveService
+            ->zipArchive([$uploadedFile])
             ->shouldNotBeCalled();
 
         $this->sendFileToHostingJob
@@ -269,7 +269,7 @@ class UploadFileTest extends TestCase
         $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
         $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
         $this->container->set(SendFileToHostingJob::class, $this->sendFileToHostingJob->reveal());
-        $this->container->set(ZipFileService::class, $this->zipFileService->reveal());
+        $this->container->set(ZipArchiveService::class, $this->zipArchiveService->reveal());
         $this->container->set(Dispatcher::class, $this->dispatcher->reveal());
     }
 }
