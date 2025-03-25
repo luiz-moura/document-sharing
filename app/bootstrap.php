@@ -15,13 +15,13 @@ $containerBuilder->useAttributes(true);
 $dotenv = new Dotenv();
 $dotenv->load(__DIR__ . '/../.env');
 
-if ($_ENV['APP_ENV']) {
-    $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
-}
-
 // Set up settings
 $settings = require __DIR__ . '/../app/settings.php';
 $settings($containerBuilder);
+
+if ($settings->get('app.env') === 'prod') {
+    $containerBuilder->enableCompilation(__DIR__ . '/../var/cache');
+}
 
 // Set up dependencies
 $dependencies = require __DIR__ . '/../app/dependencies.php';
