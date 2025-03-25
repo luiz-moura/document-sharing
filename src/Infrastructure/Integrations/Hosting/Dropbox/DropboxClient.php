@@ -5,11 +5,15 @@ namespace App\Infrastructure\Integrations\Hosting\Dropbox;
 use App\Application\Settings\SettingsInterface;
 use Psr\Log\LoggerInterface;
 use GuzzleHttp\Client as GuzzleClient;
+use Psr\Http\Client\ClientInterface as HttpClient;
+use GuzzleHttp\Psr7\Request;
 use Throwable;
 
 class DropboxClient
 {
     protected GuzzleClient $guzzleClient;
+
+    protected HttpClient $client;
 
     protected string $uri;
 
@@ -26,7 +30,6 @@ class DropboxClient
         private readonly LoggerInterface $logger,
     ) {
         $this->timeout = $this->settings->get('hosts.timeout');
-
         $this->uri = $this->settings->get('hosts.dropbox.uri');
         $this->clientId = $this->settings->get('hosts.dropbox.app_key');
         $this->clientSecret = $this->settings->get('hosts.dropbox.app_secret');
@@ -54,6 +57,22 @@ class DropboxClient
                     'code' => $this->accessCode,
                 ],
             ]);
+
+            /**
+            $response = $this->client->sendRequest(
+                new Request(
+                    'POST',
+                    $this->uri . '/oauth2/token',
+                    ['Content-Type' => 'application/x-www-form-urlencoded'],
+                    http_build_query([
+                        'grant_type' => 'authorization_code',
+                        'client_id' => $this->clientId,
+                        'client_secret' => $this->clientSecret,
+                        'code' => $this->accessCode,
+                    ])
+                )
+            );
+            */
 
             /**
              * @var array{access_token: string, token_type: string, expires_in: int, refresh_token: string, scope: string, uid: string, account_id: string} $body
@@ -86,6 +105,22 @@ class DropboxClient
                     'client_secret' => $this->clientSecret,
                 ],
             ]);
+
+            /**
+            $response = $this->client->sendRequest(
+                new Request(
+                    'POST',
+                    $this->uri . '/oauth2/token',
+                    ['Content-Type' => 'application/x-www-form-urlencoded'],
+                    http_build_query([
+                        'grant_type' => 'refresh_token',
+                        'refresh_token' => $refreshableToken,
+                        'client_id' => $this->clientId,
+                        'client_secret' => $this->clientSecret,
+                    ])
+                )
+            );
+            */
 
             /**
              * @var array{access_token: string, token_type: string, expires_in: int} $body
