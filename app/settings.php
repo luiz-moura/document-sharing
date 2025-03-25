@@ -19,6 +19,7 @@ return function (ContainerBuilder $containerBuilder): void {
                     'path' => isset($_ENV['docker']) ? 'php://stdout' : __DIR__ . '/../logs/app.log',
                     'level' => Logger::DEBUG,
                 ],
+                'tmp_dir' => realpath(__DIR__ . '/../tmp'),
                 ...(function (): array {
                     $configs = [];
 

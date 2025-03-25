@@ -36,13 +36,15 @@ return function (ContainerBuilder $containerBuilder): void {
 
             return $em;
         },
-        CacheInterface::class => DI\factory(function (): Psr16Cache {
+        CacheInterface::class => function (ContainerInterface $c): Psr16Cache {
+            $settings = $c->get(SettingsInterface::class);
+
             $filesystemAdapter = new FilesystemAdapter(
                 namespace: 'app_cache',
-                directory: __DIR__ . '/../var/cache'
+                directory: $settings->get('tmp_dir') . '/cache',
             );
 
             return new Psr16Cache($filesystemAdapter);
-        }),
+        },
     ]);
 };
