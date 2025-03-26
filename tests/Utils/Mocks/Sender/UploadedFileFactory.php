@@ -22,11 +22,11 @@ class UploadedFileFactory extends MockFactory
         );
     }
 
-    public static function make(): array
+    public static function make(array $custom = []): array
     {
         $faker = faker();
 
-        return [
+        return $custom + [
             'fileNameOrStream' => $faker->filePath() . '.' . $faker->fileExtension(),
             'name' => $faker->filePath(),
             'type' => $faker->mimeType(),

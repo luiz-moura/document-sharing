@@ -19,11 +19,11 @@ class SendFileToHostingDataFactory extends MockFactory
         );
     }
 
-    public static function make(): array
+    public static function make(array $custom = []): array
     {
         $faker = faker();
 
-        return [
+        return $custom +  [
             'hostingSlug' => $faker->slug(),
             'hostedFileId' => $faker->randomDigitNotZero(),
             'encodedFile' => new EncodedFileData(

@@ -18,11 +18,11 @@ class HostedFileDataFactory extends MockFactory
         );
     }
 
-    public static function make(): array
+    public static function make(array $custom = []): array
     {
         $faker = faker();
 
-        return [
+        return $custom + [
             'fileId' => $faker->shuffleString(),
             'filename' => $faker->filePath(),
             'webViewLink' => $faker->url(),

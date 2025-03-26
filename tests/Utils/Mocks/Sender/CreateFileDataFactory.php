@@ -18,11 +18,11 @@ class CreateFileDataFactory extends MockFactory
         );
     }
 
-    public static function make(): array
+    public static function make(array $custom = []): array
     {
         $faker = faker();
 
-        return [
+        return $custom + [
             'uuid' => $faker->uuid(),
             'name' => $faker->filePath(),
             'size' => $faker->randomDigitNotZero(),
