@@ -19,7 +19,7 @@ $dotenv->load(__DIR__ . '/../.env');
 $settings = require __DIR__ . '/../app/settings.php';
 $settings($containerBuilder);
 
-if ($settings->get('app.env') === 'prod') {
+if ($_ENV['APP_ENV'] === 'prod') {
     $containerBuilder->enableCompilation($settings->get('tmp_dir') . '/container');
 }
 
