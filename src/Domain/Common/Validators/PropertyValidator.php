@@ -9,7 +9,7 @@ use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionProperty;
 
-class AttributeValidator
+class PropertyValidator
 {
     public function validate(object $object): void
     {
