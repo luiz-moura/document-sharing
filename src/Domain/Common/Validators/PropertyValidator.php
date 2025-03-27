@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Common\Validators;
 
-use App\Domain\Common\Validators\Contracts\Validation;
+use App\Domain\Common\Validators\Contracts\Validator;
 use ReflectionAttribute;
 use ReflectionClass;
 use ReflectionProperty;
@@ -20,7 +20,7 @@ class PropertyValidator
          */
         foreach ($reflectionClass->getProperties() as $property) {
             $attributes = $property->getAttributes(
-                name: Validation::class,
+                name: Validator::class,
                 flags: ReflectionAttribute::IS_INSTANCEOF
             );
 
@@ -56,7 +56,7 @@ class PropertyValidator
             foreach ($reflectionProperty->getAttributes() as $attribute) {
                 $attributeInstance = $attribute->newInstance();
 
-                if ($attributeInstance instanceof Validation) {
+                if ($attributeInstance instanceof Validator) {
                     $attributeInstance->validate($property, $value);
                 }
             }

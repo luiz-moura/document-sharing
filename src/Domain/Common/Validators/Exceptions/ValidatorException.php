@@ -7,7 +7,7 @@ namespace App\Domain\Common\Validators\Exceptions;
 use Exception;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
 
-class ValidationException extends Exception
+class ValidatorException extends Exception
 {
     public function __construct(string $message)
     {

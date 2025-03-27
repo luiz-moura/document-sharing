@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace App\Domain\Common\Validators\Rules;
 
-use App\Domain\Common\Validators\Contracts\Validation;
-use App\Domain\Common\Validators\Exceptions\ValidationException;
+use App\Domain\Common\Validators\Contracts\Validator;
+use App\Domain\Common\Validators\Exceptions\ValidatorException;
 use Attribute;
 
 #[Attribute(Attribute::TARGET_PROPERTY)]
-final class OnlyStrings implements Validation
+final class OnlyStrings implements Validator
 {
     public function validate(string $propertyName, mixed $propertyValue, mixed ...$args): mixed
     {
         if (! is_iterable($propertyValue)) {
-            throw new ValidationException("Only integer values are allowed in the {$propertyName} field.");
+            throw new ValidatorException("Only integer values are allowed in the {$propertyName} field.");
         }
 
         $checkTyping = [
@@ -25,7 +25,7 @@ final class OnlyStrings implements Validation
 
         foreach ($propertyValue as $item) {
             if (array_reduce($checkTyping, fn ($carry, $checkType): bool => $carry || $checkType($item), initial: false)) {
-                throw new ValidationException("Only string values are allowed in the {$propertyName} field.");
+                throw new ValidatorException("Only string values are allowed in the {$propertyName} field.");
             }
         }
 
