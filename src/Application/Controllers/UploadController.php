@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace App\Application\Controllers;
 
-use App\Domain\Sender\Actions\UploadFileAction;
 use App\Domain\Sender\DTOs\UploadFileData;
-use App\Domain\Sender\Enums\FileStatusOnHostEnum;
+use App\Domain\Sender\Enums\FileHostingStatus;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
 use InvalidArgumentException;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -34,7 +33,7 @@ class UploadController
         $response->getBody()->write(
             json_encode([
                 'file_id' => $fileUuid,
-                'status' => FileStatusOnHostEnum::RECEIVED->value
+                'status' => FileHostingStatus::RECEIVED->value
             ])
         );
 

@@ -8,7 +8,7 @@ class SendFileToHostingData
 {
     public function __construct(
         public readonly string $hostingSlug,
-        public readonly int $hostedFileId,
+        public readonly int $fileHostingId,
         public readonly EncodedFileData $encodedFile,
     ) {
     }

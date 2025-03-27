@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\Doctrine\Entities;
 
-use App\Domain\Sender\Enums\FileStatusOnHostEnum;
-use App\Infrastructure\Persistence\Doctrine\Repositories\HostedFileRepository;
+use App\Domain\Sender\Enums\FileHostingStatus;
+use App\Infrastructure\Persistence\Doctrine\Repositories\FileHostingRepository;
 use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: HostedFileRepository::class), ORM\Table(name: 'hosted_files')]
-class HostedFileEntity
+#[ORM\Entity(repositoryClass: FileHostingRepository::class), ORM\Table(name: 'hosted_files')]
+class FileHostingEntity
 {
     #[ORM\Id]
     #[ORM\Column(type: 'integer')]
@@ -23,8 +23,8 @@ class HostedFileEntity
     #[ORM\Column(name: 'hosting_id', type: 'integer')]
     private int $hostingId;
 
-    #[ORM\Column(type: 'string')]
-    private string $status;
+    #[ORM\Column(type: 'string', options: ['default' => FileHostingStatus::TO_SEND->value])]
+    private string $status = FileHostingStatus::TO_SEND->value;
 
     #[ORM\Column(
         name: 'external_file_id',
@@ -59,7 +59,7 @@ class HostedFileEntity
     public function __construct(
         int $fileId,
         int $hostingId,
-        string $status,
+        ?string $status = null,
         ?string $externalFileId = null,
         ?string $webViewLink = null,
         ?string $webContentLink = null,
@@ -87,12 +87,12 @@ class HostedFileEntity
         return $this->hostingId;
     }
 
-    public function getStatus(): FileStatusOnHostEnum
+    public function getStatus(): FileHostingStatus
     {
-        return FileStatusOnHostEnum::from($this->status);
+        return FileHostingStatus::from($this->status);
     }
 
-    public function setStatus(FileStatusOnHostEnum $status): self
+    public function setStatus(FileHostingStatus $status): self
     {
         $this->status = $status->value;
 

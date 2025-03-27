@@ -25,7 +25,7 @@ class SendFileToHostingDataFactory extends MockFactory
 
         return $custom +  [
             'hostingSlug' => $faker->slug(),
-            'hostedFileId' => $faker->randomDigitNotZero(),
+            'fileHostingId' => $faker->randomDigitNotZero(),
             'encodedFile' => new EncodedFileData(
                 base64: $faker->sha256(),
                 filename: $faker->word(),

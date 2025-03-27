@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\InMemory;
 
-use App\Domain\Sender\Contracts\FileRepository;
+use App\Domain\Sender\Contracts\FileRepository as FileRepositoryContract;
 use App\Domain\Sender\DTOs\CreateFileData;
 
-class InMemoryFileRepository implements FileRepository
+class FileRepository implements FileRepositoryContract
 {
     public function create(CreateFileData $file): int
     {

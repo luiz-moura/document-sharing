@@ -6,13 +6,13 @@ namespace App\Infrastructure\Integrations\Hosting\InMemory;
 
 use App\Domain\Sender\Contracts\FileSenderService;
 use App\Domain\Sender\DTOs\EncodedFileData;
-use App\Domain\Sender\DTOs\HostedFileData;
+use App\Domain\Sender\DTOs\FileHostingData;
 
 class InMemoryFileSenderService implements FileSenderService
 {
-    public function send(EncodedFileData $encodedFile): HostedFileData
+    public function send(EncodedFileData $encodedFile): FileHostingData
     {
-        return new HostedFileData(
+        return new FileHostingData(
             fileId: '312312da',
             filename: $encodedFile->filename,
             webViewLink: sprintf('http://localhost:8080/%s.%s', $encodedFile->filename, $encodedFile->mimeType),

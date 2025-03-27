@@ -10,6 +10,7 @@ interface HostingRepository
 {
     /**
      * @param string[] $hostingSlugs
+     *
      * @return HostingData[]
      */
     public function queryBySlugs(array $hostingSlugs): array;

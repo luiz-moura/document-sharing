@@ -8,10 +8,10 @@ use App\Application\Handlers\HttpErrorHandler;
 use App\Domain\Common\Services\Uuid\Contracts\UuidGeneratorService;
 use App\Domain\Common\Queue\Dispatcher;
 use App\Domain\Common\Services\ZipArchive\ZipArchiveService;
-use App\Domain\Sender\Contracts\HostedFileRepository;
+use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
-use App\Domain\Sender\DTOs\CreateHostedFileData;
+use App\Domain\Sender\DTOs\CreateFileHostingData;
 use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
@@ -53,7 +53,7 @@ class UploadFileTest extends TestCase
         $this->faker = faker();
 
         $this->fileRepositoryProphecy = $this->prophesize(FileRepository::class);
-        $this->fileHostingRepositoryProphecy = $this->prophesize(HostedFileRepository::class);
+        $this->fileHostingRepositoryProphecy = $this->prophesize(FileHostingRepository::class);
         $this->hostingRepositoryProphecy = $this->prophesize(HostingRepository::class);
         $this->uuidGeneratorService = $this->prophesize(UuidGeneratorService::class);
         $this->zipArchiveService = $this->prophesize(ZipArchiveService::class);
@@ -197,8 +197,8 @@ class UploadFileTest extends TestCase
 
         $fileId = $this->faker->randomDigitNotZero();
         $hostingSlugs = ['google-drive'];
-        $googleDriveHosting = new HostingData($this->faker->randomDigitNotZero(), $hostingSlugs[0], 'Google Drive');
-        $hostedFileId = $this->faker->randomDigitNotZero();
+        $googleDriveHosting = new HostingData($this->faker->randomDigitNotZero(), $hostingSlugs[0], 'Google Drive', null, null);
+        $fileHostingId = $this->faker->randomDigitNotZero();
 
         $this->hostingRepositoryProphecy
             ->queryBySlugs($hostingSlugs)
@@ -217,12 +217,12 @@ class UploadFileTest extends TestCase
 
         $this->fileHostingRepositoryProphecy
             ->create(
-                new CreateHostedFileData(
+                new CreateFileHostingData(
                     fileId: $fileId,
                     hostingId: $googleDriveHosting->id
                 ),
             )
-            ->willReturn($hostedFileId)
+            ->willReturn($fileHostingId)
             ->shouldBeCalledOnce();
 
         $this->zipArchiveService
@@ -233,7 +233,7 @@ class UploadFileTest extends TestCase
             ->setArgs(
                 new SendFileToHostingData(
                     $googleDriveHosting->slug,
-                    $hostedFileId,
+                    $fileHostingId,
                     new EncodedFileData(
                         $streamContent,
                         $filename,
@@ -265,7 +265,7 @@ class UploadFileTest extends TestCase
     private function containerSetProphecyReveal(): void
     {
         $this->container->set(FileRepository::class, $this->fileRepositoryProphecy->reveal());
-        $this->container->set(HostedFileRepository::class, $this->fileHostingRepositoryProphecy->reveal());
+        $this->container->set(FileHostingRepository::class, $this->fileHostingRepositoryProphecy->reveal());
         $this->container->set(HostingRepository::class, $this->hostingRepositoryProphecy->reveal());
         $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
         $this->container->set(SendFileToHostingJob::class, $this->sendFileToHostingJob->reveal());

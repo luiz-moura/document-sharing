@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 use App\Domain\Common\Services\Uuid\Contracts\UuidGeneratorService as UuidGeneratorServiceContract;
 use App\Domain\Common\Queue\Contracts\Publisher;
-use App\Domain\Sender\Contracts\HostedFileRepository as HostedFileRepositoryContract;
+use App\Domain\Sender\Contracts\FileHostingRepository as FileHostingRepositoryContract;
 use App\Domain\Sender\Contracts\FileRepository as FileRepositoryContract;
 use App\Domain\Sender\Contracts\FileSenderFactory as FileSenderFactoryContract;
 use App\Domain\Sender\Contracts\HostingRepository as HostingRepositoryContract;
 use App\Infrastructure\Adapters\Uuid\UuidGeneratorService;
 use App\Infrastructure\Integrations\Hosting\FileSenderFactory as HostingFileSenderFactory;
 use App\Infrastructure\Persistence\Doctrine\Entities\FileEntity;
-use App\Infrastructure\Persistence\Doctrine\Entities\HostedFileEntity;
+use App\Infrastructure\Persistence\Doctrine\Entities\FileHostingEntity;
 use App\Infrastructure\Persistence\Doctrine\Entities\HostingEntity;
 use App\Infrastructure\Queue\Contracts\QueueManagerInterface;
 use App\Infrastructure\Queue\RabbitMQ\QueueManager;
@@ -31,8 +31,8 @@ return function (ContainerBuilder $containerBuilder): void {
         HostingRepositoryContract::class => function (ContainerInterface $container): HostingRepositoryContract {
             return $container->get(EntityManagerInterface::class)->getRepository(HostingEntity::class);
         },
-        HostedFileRepositoryContract::class => function (ContainerInterface $container): HostedFileRepositoryContract {
-            return $container->get(EntityManagerInterface::class)->getRepository(HostedFileEntity::class);
+        FileHostingRepositoryContract::class => function (ContainerInterface $container): FileHostingRepositoryContract {
+            return $container->get(EntityManagerInterface::class)->getRepository(FileHostingEntity::class);
         },
 
         /** Services */

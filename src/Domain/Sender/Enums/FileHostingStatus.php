@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Domain\Sender\Enums;
 
-enum FileStatusOnHostEnum: string
+enum FileHostingStatus: string
 {
     case RECEIVED = 'received';
     case TO_SEND = 'to_send';

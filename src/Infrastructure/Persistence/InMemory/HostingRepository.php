@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Infrastructure\Persistence\InMemory;
 
-use App\Domain\Sender\Contracts\HostingRepository;
+use App\Domain\Sender\Contracts\HostingRepository as HostingRepositoryContract;
 use App\Domain\Sender\DTOs\HostingData;
 
-class InMemoryHostingRepository implements HostingRepository
+class HostingRepository implements HostingRepositoryContract
 {
     public function queryBySlugs(array $slugs): array
     {
