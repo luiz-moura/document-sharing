@@ -14,7 +14,7 @@ use App\Domain\Sender\DTOs\CreateHostedFileData;
 use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
-use App\Domain\Sender\DTOs\UploadRequestData;
+use App\Domain\Sender\DTOs\UploadFileData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
 use App\Domain\Sender\Exceptions\InvalidFileException;
 use App\Domain\Sender\Jobs\SendFileToHostingJob;
@@ -103,7 +103,7 @@ class UploadFileActionTest extends TestCase
         $this->expectExceptionMessage('Failed to write file to disk.');
 
         $this->sut->__invoke(
-            new UploadRequestData(
+            new UploadFileData(
                 $hostingSlug,
                 [$uploadedFile],
                 shouldZip: false,
@@ -154,7 +154,7 @@ class UploadFileActionTest extends TestCase
         $this->expectExceptionMessage('File size is too large');
 
         $this->sut->__invoke(
-            new UploadRequestData(
+            new UploadFileData(
                 $hostingSlug,
                 [$uploadedFile],
                 shouldZip: false,
@@ -205,7 +205,7 @@ class UploadFileActionTest extends TestCase
         $this->expectExceptionMessage('Invalid file type');
 
         $this->sut->__invoke(
-            new UploadRequestData(
+            new UploadFileData(
                 $hostingSlug,
                 [$uploadedFile],
                 shouldZip: false,
@@ -265,7 +265,7 @@ class UploadFileActionTest extends TestCase
         $this->expectExceptionMessage('Invalid file content');
 
         $this->sut->__invoke(
-            new UploadRequestData(
+            new UploadFileData(
                 $hostingSlugs,
                 [$uploadedFile],
                 shouldZip: false,
@@ -326,7 +326,7 @@ class UploadFileActionTest extends TestCase
         $this->expectException(HostingNotFoundException::class);
 
         $this->sut->__invoke(
-            new UploadRequestData(
+            new UploadFileData(
                 $hostingSlugs,
                 [$uploadedFile],
                 shouldZip: false,
@@ -441,7 +441,7 @@ class UploadFileActionTest extends TestCase
             ->method('dispatch');
 
         $this->sut->__invoke(
-            new UploadRequestData(
+            new UploadFileData(
                 $hostingSlugs,
                 [$uploadedFile],
                 shouldZip: false,

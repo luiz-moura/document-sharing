@@ -13,7 +13,7 @@ use Psr\Http\Message\UploadedFileInterface;
  * @property string[] $hostingSlugs
  * @property UploadedFileInterface[] $uploadedFiles
  */
-class UploadRequestData extends DataTransferObject
+class UploadFileData extends DataTransferObject
 {
     public function __construct(
         #[NotBlank]

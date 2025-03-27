@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Application\Controllers;
 
 use App\Domain\Sender\Actions\UploadFileAction;
-use App\Domain\Sender\DTOs\UploadRequestData;
+use App\Domain\Sender\DTOs\UploadFileData;
 use App\Domain\Sender\Enums\FileStatusOnHostEnum;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
 use InvalidArgumentException;
@@ -23,7 +23,7 @@ class UploadController
     {
         $this->validateRequest($request);
 
-        $uploadRequest = new UploadRequestData(
+        $uploadRequest = new UploadFileData(
             hostingSlugs: $request->getParsedBody()['hosting_slugs'],
             uploadedFiles: $request->getUploadedFiles()['files'],
             shouldZip: filter_var($request->getParsedBody()['should_zip'] ?? false, FILTER_VALIDATE_BOOLEAN),
