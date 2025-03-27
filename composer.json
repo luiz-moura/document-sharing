@@ -16,7 +16,6 @@
         "doctrine/doctrine-migrations-bundle": "^3.3",
         "doctrine/migrations": "^3.8",
         "doctrine/orm": "^3.2",
-        "fakerphp/faker": "^1.23",
         "fig/http-message-util": "^1.1",
         "guzzlehttp/guzzle": "^7.9",
         "monolog/monolog": "^2.8",
@@ -31,6 +30,7 @@
         "symfony/dotenv": "^7.1"
     },
     "require-dev": {
+        "fakerphp/faker": "^1.24",
         "jangregor/phpstan-prophecy": "^1.0.0",
         "phpspec/prophecy-phpunit": "^2.0",
         "phpstan/extension-installer": "^1.2.0",
