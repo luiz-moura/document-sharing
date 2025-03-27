@@ -8,8 +8,6 @@ return [
     'host' => $_ENV['DB_HOST'],
     'port' => $_ENV['DB_PORT'],
 
-    'em_path' => realpath(__DIR__ . '/../src/Infrastructure/Persistence/Doctrine/entity-manager.php'),
-
     'doctrine' => [
         'table_storage' => [
             'table_name' => 'doctrine_migration_versions',
@@ -30,4 +28,6 @@ return [
         'connection' => null,
         'em' => null,
     ],
+
+    'entity_manager_path' => realpath(__DIR__ . '/../src/Infrastructure/Persistence/Doctrine/entity-manager.php'),
 ];

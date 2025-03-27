@@ -32,7 +32,7 @@ return function (ContainerBuilder $containerBuilder): void {
         EntityManagerInterface::class => function (ContainerInterface $c): EntityManagerInterface {
             $settings = $c->get(SettingsInterface::class);
 
-            $em = require $settings->get('database.em_path');
+            $em = require $settings->get('database.entity_manager_path');
 
             return $em;
         },
