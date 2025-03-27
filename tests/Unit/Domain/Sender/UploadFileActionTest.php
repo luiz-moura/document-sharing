@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Sender;
 
-use App\Domain\Common\Adapters\Contracts\UuidGeneratorService;
+use App\Domain\Common\Services\Uuid\Contracts\UuidGeneratorService;
 use App\Domain\Common\Queue\Dispatcher;
 use App\Domain\Common\Services\ZipArchive\ZipArchiveService;
 use App\Domain\Sender\Actions\UploadFileAction;

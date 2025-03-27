@@ -2,7 +2,7 @@
 
 namespace App\Infrastructure\Adapters\Uuid;
 
-use App\Domain\Common\Adapters\Contracts\UuidGeneratorService as UuidGeneratorServiceContract;
+use App\Domain\Common\Services\Uuid\Contracts\UuidGeneratorService as UuidGeneratorServiceContract;
 use Ramsey\Uuid\Uuid;
 
 class UuidGeneratorService implements UuidGeneratorServiceContract

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Common\Adapters\Contracts;
+namespace App\Domain\Common\Services\Uuid\Contracts;
 
 interface UuidGeneratorService
 {
