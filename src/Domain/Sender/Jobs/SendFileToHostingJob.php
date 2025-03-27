@@ -10,6 +10,7 @@ use DI\Attribute\Inject;
 
 class SendFileToHostingJob extends AbstractJob
 {
+    // TODO: change responsibility to app in queue manager
     #[Inject]
     /** @phpstan-ignore-next-line */
     private readonly SendFileToHostingAction $sendFileToHostingAction;

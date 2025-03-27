@@ -5,7 +5,7 @@ namespace Src\Domain\Common\Queue\Exceptions;
 use Exception;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
 
-class InvalidQueueJobException extends Exception
+class InvalidJobException extends Exception
 {
     public function __construct()
     {

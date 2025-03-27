@@ -11,7 +11,7 @@ use Psr\Log\LoggerInterface;
 use App\Infrastructure\Queue\Contracts\QueueManagerInterface;
 use DI\Container;
 use RuntimeException;
-use Src\Domain\Common\Queue\Exceptions\InvalidQueueJobException;
+use Src\Domain\Common\Queue\Exceptions\InvalidJobException;
 use Throwable;
 
 class QueueManager implements QueueManagerInterface
@@ -124,14 +124,14 @@ class QueueManager implements QueueManagerInterface
     }
 
     /**
-     * @throws InvalidQueueJobException
+     * @throws InvalidJobException
      */
     private function callback(AMQPMessage $message): void
     {
         $job = unserialize($message->getBody());
 
         if (! $job instanceof Job) {
-            throw new InvalidQueueJobException();
+            throw new InvalidJobException();
         }
 
         $this->container->injectOn($job);
