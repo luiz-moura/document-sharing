@@ -5,7 +5,7 @@ namespace App\Infrastructure\Integrations\Hosting\Dropbox;
 use App\Domain\Sender\Contracts\FileSenderService;
 use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostedFileData;
-use App\Infrastructure\Integrations\Hosting\Traits\GenerateFilename;
+use App\Infrastructure\Integrations\Hosting\Common\Traits\GenerateFilename;
 use Psr\Log\LoggerInterface;
 use Spatie\Dropbox\Client as DropboxClient;
 use Throwable;

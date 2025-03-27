@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Infrastructure\Integrations\Hosting\Exceptions;
+namespace App\Infrastructure\Integrations\Hosting\Common\Exceptions;
 
 use Exception;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;

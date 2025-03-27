@@ -8,8 +8,8 @@ use App\Domain\Sender\Contracts\FileSenderFactory as FileSenderFactoryContract;
 use App\Domain\Sender\Contracts\FileSenderService;
 use App\Infrastructure\Integrations\Hosting\Dropbox\DropboxService;
 use App\Infrastructure\Integrations\Hosting\InMemory\InMemoryFileSenderService;
-use App\Infrastructure\Integrations\Hosting\Enums\HostingEnum;
-use App\Infrastructure\Integrations\Hosting\Exceptions\FileSenderHostingNotFoundException;
+use App\Infrastructure\Integrations\Hosting\Common\Enums\HostingEnum;
+use App\Infrastructure\Integrations\Hosting\Common\Exceptions\FileSenderHostingNotFoundException;
 use Psr\Container\ContainerInterface;
 
 class FileSenderFactory implements FileSenderFactoryContract
