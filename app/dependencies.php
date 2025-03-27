@@ -41,7 +41,7 @@ return function (ContainerBuilder $containerBuilder): void {
 
             $filesystemAdapter = new FilesystemAdapter(
                 namespace: 'app_cache',
-                directory: $settings->get('tmp_dir') . '/cache',
+                directory: $settings->get('tmpDir') . '/cache',
             );
 
             return new Psr16Cache($filesystemAdapter);
