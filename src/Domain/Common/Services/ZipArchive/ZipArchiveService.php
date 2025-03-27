@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Domain\Sender\Services\ZipArchive;
+namespace App\Domain\Common\Services\ZipArchive;
 
-use App\Domain\Sender\Services\ZipArchive\Exceptions\ZipArchiveException;
+use App\Domain\Common\Services\ZipArchive\Exceptions\ZipArchiveException;
 use Psr\Http\Message\UploadedFileInterface;
 use ZipArchive;
 

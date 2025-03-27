@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Sender\Services\ZipArchive\Exceptions;
+namespace App\Domain\Common\Services\ZipArchive\Exceptions;
 
 use Exception;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;

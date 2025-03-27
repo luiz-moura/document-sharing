@@ -6,6 +6,7 @@ namespace App\Domain\Sender\Actions;
 
 use App\Domain\Common\Adapters\Contracts\UuidGeneratorService;
 use App\Domain\Common\Queue\Dispatcher;
+use App\Domain\Common\Services\ZipArchive\ZipArchiveService;
 use App\Domain\Sender\Contracts\HostedFileRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
@@ -18,7 +19,6 @@ use App\Domain\Sender\DTOs\UploadFileData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
 use App\Domain\Sender\Exceptions\InvalidFileException;
 use App\Domain\Sender\Jobs\SendFileToHostingJob;
-use App\Domain\Sender\Services\ZipArchive\ZipArchiveService;
 use DateTime;
 use Psr\Http\Message\UploadedFileInterface;
 
