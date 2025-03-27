@@ -20,7 +20,7 @@ $settings = require __DIR__ . '/../app/settings.php';
 $settings($containerBuilder);
 
 if ($_ENV['APP_ENV'] === 'prod') {
-    $containerBuilder->enableCompilation($settings->get('tmp_dir') . '/container');
+    $containerBuilder->enableCompilation(__DIR__ . '/../tmp/container');
 }
 
 // Set up dependencies
