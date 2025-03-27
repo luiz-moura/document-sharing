@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Infrastructure\Integrations\Hosting\Common\Traits;
+namespace App\Infrastructure\Integrations\Hosting\Traits;
 
 trait GenerateFilename
 {

@@ -14,7 +14,7 @@ use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Tests\Utils\Mocks\Sender\FileHostingDataFactory;
+use Tests\Utils\Mocks\Sender\FileOnHostingDataFactory;
 use Tests\Utils\Mocks\Sender\SendFileToHostingDataFactory;
 
 class SendFileToHostingActionTest extends TestCase
@@ -45,7 +45,7 @@ class SendFileToHostingActionTest extends TestCase
     {
         $sendFileToHosting = SendFileToHostingDataFactory::create();
 
-        $fileHosting = FileHostingDataFactory::create();
+        $fileOnHosting = FileOnHostingDataFactory::create();
 
         $this->fileHostingRepository
             ->expects($this->once())
@@ -62,7 +62,7 @@ class SendFileToHostingActionTest extends TestCase
             ->expects($this->once())
             ->method('send')
             ->with($sendFileToHosting->encodedFile)
-            ->willReturn($fileHosting);
+            ->willReturn($fileOnHosting);
 
         $this->sut->__invoke($sendFileToHosting);
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Infrastructure\Integrations\Hosting\Common\Enums;
+namespace App\Infrastructure\Integrations\Hosting\Enums;
 
 enum HostingEnum: string
 {

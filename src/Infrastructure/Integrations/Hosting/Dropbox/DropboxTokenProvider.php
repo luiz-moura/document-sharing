@@ -4,7 +4,7 @@ namespace App\Infrastructure\Integrations\Hosting\Dropbox;
 
 use App\Domain\Sender\Contracts\HostingRepository;
 use App\Infrastructure\Integrations\Hosting\Dropbox\Exceptions\AccessTokenNotDefinedException;
-use App\Infrastructure\Integrations\Hosting\Common\Enums\HostingEnum;
+use App\Infrastructure\Integrations\Hosting\Enums\HostingEnum;
 use Psr\Log\LoggerInterface;
 use Psr\SimpleCache\CacheInterface;
 use GuzzleHttp\Exception\ClientException;

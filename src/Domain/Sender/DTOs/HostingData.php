@@ -10,8 +10,8 @@ class HostingData
         public readonly int $id,
         public readonly string $slug,
         public readonly string $name,
-        public readonly ?string $refreshableToken = null,
-        public readonly ?string $accessToken = null,
+        public readonly ?string $refreshableToken,
+        public readonly ?string $accessToken,
     ) {
     }
 }

@@ -4,7 +4,7 @@ namespace App\Infrastructure\Integrations\Hosting\Dropbox;
 
 use App\Domain\Sender\Contracts\FileSenderService;
 use App\Domain\Sender\DTOs\EncodedFileData;
-use App\Domain\Sender\DTOs\FileHostingData;
+use App\Domain\Sender\DTOs\FileOnHostingData;
 use App\Domain\Sender\Exceptions\FailedToSendFileException;
 use App\Infrastructure\Integrations\Hosting\Traits\GenerateFilename;
 use Psr\Log\LoggerInterface;
@@ -24,7 +24,10 @@ class DropboxService implements FileSenderService
         $this->client = new DropboxClient($this->tokenProvider);
     }
 
-    public function send(EncodedFileData $encodedFile): FileHostingData
+    /**
+     * @throws FailedToSendFileException
+     */
+    public function send(EncodedFileData $encodedFile): FileOnHostingData
     {
         $this->logger->info(sprintf('[%s] Uploading file to Dropbox.', __METHOD__), [
             'filename' => $encodedFile->filename,
@@ -52,10 +55,10 @@ class DropboxService implements FileSenderService
                 'exception' => $exception,
             ]);
 
-            throw $exception;
+            throw new FailedToSendFileException($exception);
         }
 
-        return new FileHostingData(
+        return new FileOnHostingData(
             fileId: strval($uploadedFile['id']),
             filename: $uploadedFile['name'],
             webViewLink: $sharedLink['url'],

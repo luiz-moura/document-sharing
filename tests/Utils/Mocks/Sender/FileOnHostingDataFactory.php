@@ -4,16 +4,16 @@ declare(strict_types=1);
 
 namespace Tests\Utils\Mocks\Sender;
 
-use App\Domain\Sender\DTOs\FileHostingData;
+use App\Domain\Sender\DTOs\FileOnHostingData;
 use Tests\Utils\Mocks\MockFactory;
 
 use function Tests\Utils\Faker\faker;
 
-class FileHostingDataFactory extends MockFactory
+class FileOnHostingDataFactory extends MockFactory
 {
-    public static function create(array $custom = []): FileHostingData
+    public static function create(array $custom = []): FileOnHostingData
     {
-        return new FileHostingData(
+        return new FileOnHostingData(
             ...($custom + static::make())
         );
     }
