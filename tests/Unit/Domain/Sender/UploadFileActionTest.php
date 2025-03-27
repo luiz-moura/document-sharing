@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Sender;
 
 use App\Domain\Common\Services\Uuid\Contracts\UuidGeneratorService;
-use App\Domain\Common\Queue\Dispatcher;
+use App\Domain\Common\Queue\JobDispatcher;
 use App\Domain\Common\Services\ZipArchive\ZipArchiveService;
 use App\Domain\Sender\Actions\GenerateFilenameAction;
 use App\Domain\Sender\Actions\UploadFileUseCase;
@@ -42,7 +42,7 @@ class UploadFileActionTest extends TestCase
     private MockObject|UuidGeneratorService $uuidGeneratorService;
     private MockObject|ZipArchiveService $zipArchiveService;
     private MockObject|SendFileToHostingJob $sendFileToHostingJob;
-    private MockObject|Dispatcher $dispatcher;
+    private MockObject|JobDispatcher $jobDispatcher;
     private UploadFileUseCase $sut;
 
     protected function setUp(): void
@@ -59,7 +59,7 @@ class UploadFileActionTest extends TestCase
         $this->uuidGeneratorService = $this->createMock(UuidGeneratorService::class);
         $this->zipArchiveService = $this->createMock(ZipArchiveService::class);
         $this->sendFileToHostingJob = $this->createMock(SendFileToHostingJob::class);
-        $this->dispatcher = $this->createMock(Dispatcher::class);
+        $this->jobDispatcher = $this->createMock(JobDispatcher::class);
 
         $this->sut = new UploadFileUseCase(
             $this->validateUploadedFileAction,
@@ -70,7 +70,7 @@ class UploadFileActionTest extends TestCase
             $this->uuidGeneratorService,
             $this->zipArchiveService,
             $this->sendFileToHostingJob,
-            $this->dispatcher,
+            $this->jobDispatcher,
         );
     }
 
@@ -103,7 +103,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('zipArchive');
 
-        $this->dispatcher
+        $this->jobDispatcher
             ->expects($this->never())
             ->method('dispatch');
 
@@ -154,7 +154,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('zipArchive');
 
-        $this->dispatcher
+        $this->jobDispatcher
             ->expects($this->never())
             ->method('dispatch');
 
@@ -205,7 +205,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('zipArchive');
 
-        $this->dispatcher
+        $this->jobDispatcher
             ->expects($this->never())
             ->method('dispatch');
 
@@ -265,7 +265,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('zipArchive');
 
-        $this->dispatcher
+        $this->jobDispatcher
             ->expects($this->never())
             ->method('dispatch');
 
@@ -327,7 +327,7 @@ class UploadFileActionTest extends TestCase
             ->expects($this->never())
             ->method('zipArchive');
 
-        $this->dispatcher
+        $this->jobDispatcher
             ->expects($this->never())
             ->method('dispatch');
 
@@ -444,7 +444,7 @@ class UploadFileActionTest extends TestCase
                 )
             )->willReturnSelf();
 
-        $this->dispatcher
+        $this->jobDispatcher
             ->expects($this->exactly(2))
             ->method('dispatch');
 

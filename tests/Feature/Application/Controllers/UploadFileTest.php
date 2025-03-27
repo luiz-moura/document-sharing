@@ -6,7 +6,7 @@ namespace Tests\Application\Sender;
 
 use App\Application\Handlers\HttpErrorHandler;
 use App\Domain\Common\Services\Uuid\Contracts\UuidGeneratorService;
-use App\Domain\Common\Queue\Dispatcher;
+use App\Domain\Common\Queue\JobDispatcher;
 use App\Domain\Common\Services\ZipArchive\ZipArchiveService;
 use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileRepository;
@@ -41,7 +41,7 @@ class UploadFileTest extends TestCase
     private ObjectProphecy $uuidGeneratorService;
     private ObjectProphecy $zipArchiveService;
     private ObjectProphecy $sendFileToHostingJob;
-    private ObjectProphecy $dispatcher;
+    private ObjectProphecy $jobDispatcher;
 
     protected function setup(): void
     {
@@ -58,7 +58,7 @@ class UploadFileTest extends TestCase
         $this->uuidGeneratorService = $this->prophesize(UuidGeneratorService::class);
         $this->zipArchiveService = $this->prophesize(ZipArchiveService::class);
         $this->sendFileToHostingJob = $this->prophesize(SendFileToHostingJob::class);
-        $this->dispatcher = $this->prophesize(Dispatcher::class);
+        $this->jobDispatcher = $this->prophesize(JobDispatcher::class);
     }
 
     public function testShouldFailWhenFileIsNotSent(): void
@@ -78,7 +78,7 @@ class UploadFileTest extends TestCase
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
         $this->zipArchiveService->zipArchive()->shouldNotBeCalled();
         $this->sendFileToHostingJob->setArgs()->shouldNotBeCalled();
-        $this->dispatcher->dispatch()->shouldNotBeCalled();
+        $this->jobDispatcher->dispatch()->shouldNotBeCalled();
 
         $this->containerSetProphecyReveal();
 
@@ -110,7 +110,7 @@ class UploadFileTest extends TestCase
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
         $this->zipArchiveService->zipArchive()->shouldNotBeCalled();
         $this->sendFileToHostingJob->setArgs()->shouldNotBeCalled();
-        $this->dispatcher->dispatch()->shouldNotBeCalled();
+        $this->jobDispatcher->dispatch()->shouldNotBeCalled();
 
         $this->containerSetProphecyReveal();
 
@@ -144,7 +144,7 @@ class UploadFileTest extends TestCase
         $this->uuidGeneratorService->generateUuid()->shouldNotBeCalled();
         $this->zipArchiveService->zipArchive()->shouldNotBeCalled();
         $this->sendFileToHostingJob->setArgs()->shouldNotBeCalled();
-        $this->dispatcher->dispatch()->shouldNotBeCalled();
+        $this->jobDispatcher->dispatch()->shouldNotBeCalled();
 
         $this->containerSetProphecyReveal();
 
@@ -244,7 +244,7 @@ class UploadFileTest extends TestCase
             )->willReturn($this->sendFileToHostingJob->reveal())
             ->shouldBeCalledOnce();
 
-        $this->dispatcher
+        $this->jobDispatcher
             ->dispatch($this->sendFileToHostingJob->reveal())
             ->shouldBeCalledOnce();
 
@@ -270,6 +270,6 @@ class UploadFileTest extends TestCase
         $this->container->set(UuidGeneratorService::class, $this->uuidGeneratorService->reveal());
         $this->container->set(SendFileToHostingJob::class, $this->sendFileToHostingJob->reveal());
         $this->container->set(ZipArchiveService::class, $this->zipArchiveService->reveal());
-        $this->container->set(Dispatcher::class, $this->dispatcher->reveal());
+        $this->container->set(JobDispatcher::class, $this->jobDispatcher->reveal());
     }
 }

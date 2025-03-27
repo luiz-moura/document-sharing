@@ -2,9 +2,9 @@
 
 namespace App\Domain\Common\Queue;
 
-use App\Domain\Common\Queue\Contracts\Job;
+use App\Domain\Common\Queue\Contracts\Job as JobContract;
 
-abstract class AbstractJob implements Job
+abstract class Job implements JobContract
 {
     public const string DEFAULT_QUEUE_NAME = 'app';
 

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Domain\Sender\Actions;
 
 use App\Domain\Common\Services\Uuid\Contracts\UuidGeneratorService;
-use App\Domain\Common\Queue\Dispatcher;
+use App\Domain\Common\Queue\JobDispatcher;
 use App\Domain\Common\Services\ZipArchive\ZipArchiveService;
 use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileRepository;
@@ -35,7 +35,7 @@ class UploadFileUseCase
         private readonly UuidGeneratorService $uuidGeneratorService,
         private readonly ZipArchiveService $zipArchiveService,
         private readonly SendFileToHostingJob $sendFileToHostingJob,
-        private readonly Dispatcher $dispatcher,
+        private readonly JobDispatcher $jobDispatcher,
     ) {
     }
 
@@ -151,7 +151,7 @@ class UploadFileUseCase
                 )
             );
 
-            $this->dispatcher->addJob($this->sendFileToHostingJob)->dispatch();
+            $this->jobDispatcher->addJob($this->sendFileToHostingJob)->dispatch();
         }
     }
 

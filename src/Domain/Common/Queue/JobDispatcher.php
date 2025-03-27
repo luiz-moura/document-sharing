@@ -5,7 +5,7 @@ namespace App\Domain\Common\Queue;
 use App\Domain\Common\Queue\Contracts\Job;
 use App\Domain\Common\Queue\Contracts\Publisher;
 
-class Dispatcher
+class JobDispatcher
 {
     public function __construct(
         private readonly Publisher $publisher
