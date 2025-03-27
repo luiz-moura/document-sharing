@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Controllers;
 
+use App\Domain\Sender\Actions\UploadFileUseCase;
 use App\Domain\Sender\DTOs\UploadFileData;
 use App\Domain\Sender\Enums\FileHostingStatus;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
@@ -14,7 +15,7 @@ use Psr\Http\Message\ServerRequestInterface as Request;
 class UploadController
 {
     public function __construct(
-        private readonly UploadFileAction $uploadFileAction,
+        private readonly UploadFileUseCase $uploadFileUseCase,
     ) {
     }
 
@@ -28,7 +29,7 @@ class UploadController
             shouldZip: filter_var($request->getParsedBody()['should_zip'] ?? false, FILTER_VALIDATE_BOOLEAN),
         );
 
-        $fileUuid = ($this->uploadFileAction)($uploadRequest);
+        $fileUuid = ($this->uploadFileUseCase)($uploadRequest);
 
         $response->getBody()->write(
             json_encode([

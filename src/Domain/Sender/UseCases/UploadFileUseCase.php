@@ -7,30 +7,30 @@ namespace App\Domain\Sender\Actions;
 use App\Domain\Common\Services\Uuid\Contracts\UuidGeneratorService;
 use App\Domain\Common\Queue\Dispatcher;
 use App\Domain\Common\Services\ZipArchive\ZipArchiveService;
-use App\Domain\Sender\Contracts\HostedFileRepository;
+use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\CreateFileData;
-use App\Domain\Sender\DTOs\CreateHostedFileData;
+use App\Domain\Sender\DTOs\CreateFileHostingData;
 use App\Domain\Sender\DTOs\EncodedFileData;
 use App\Domain\Sender\DTOs\HostingData;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\DTOs\UploadFileData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
-use App\Domain\Sender\Exceptions\InvalidFileException;
 use App\Domain\Sender\Jobs\SendFileToHostingJob;
-use DateTime;
 use Psr\Http\Message\UploadedFileInterface;
 
-class UploadFileAction
+class UploadFileUseCase
 {
-    public const array ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png'];
+    public const string APPLICATION_ZIP_MIME_TYPE = 'application/zip';
 
-    public const ZIP_MIME_TYPE = 'application/zip';
+    public const string APPLICATION_ZIP_EXTENSION = 'zip';
 
     public function __construct(
+        private readonly ValidateUploadedFileAction $validateUploadedFileAction,
+        private readonly GenerateFilenameAction $generateFilenameAction,
         private readonly FileRepository $fileRepository,
-        private readonly HostedFileRepository $fileHostingRepository,
+        private readonly FileHostingRepository $fileHostingRepository,
         private readonly HostingRepository $hostingRepository,
         private readonly UuidGeneratorService $uuidGeneratorService,
         private readonly ZipArchiveService $zipArchiveService,
@@ -42,31 +42,33 @@ class UploadFileAction
     /**
      * @return string[]
      */
-    public function __invoke(UploadFileData $uploadRequest): array
+    public function __invoke(UploadFileData $uploadFileData): array
     {
-        $this->validateUploadedFile($uploadRequest->uploadedFiles);
-
-        $hostings = $this->queryHostingByIds($uploadRequest->hostingSlugs);
-
-        if ($uploadRequest->shouldZip) {
-            return [$this->zipArchive($uploadRequest->uploadedFiles, $hostings)];
+        foreach ($uploadFileData->uploadedFiles as $uploadedFile) {
+            ($this->validateUploadedFileAction)($uploadedFile);
         }
 
-        return $this->sendIndividually($uploadRequest->uploadedFiles, $hostings);
+        $hostings = $this->queryHostingByIds($uploadFileData->hostingSlugs);
+
+        if ($uploadFileData->shouldZip) {
+            return [$this->sendZippedArchive($uploadFileData->uploadedFiles, $hostings)];
+        }
+
+        return $this->sendIndividually($uploadFileData->uploadedFiles, $hostings);
     }
 
     /**
      * @param UploadedFileInterface[] $uploadedFiles
      * @param string[] $hostings
      */
-    private function zipArchive(array $uploadedFiles, array $hostings): string
+    private function sendZippedArchive(array $uploadedFiles, array $hostings): string
     {
         $fileUuid = $this->uuidGeneratorService->generateUuid();
-        $filename = $this->generateFilename($fileUuid);
+        $filename = ($this->generateFilenameAction)($fileUuid, self::APPLICATION_ZIP_EXTENSION);
 
         $binary = $this->zipArchiveService->zipArchive($uploadedFiles);
         $filesize = strlen($binary);
-        $mimeType = self::ZIP_MIME_TYPE;
+        $mimeType = self::APPLICATION_ZIP_MIME_TYPE;
 
         $fileId = $this->fileRepository->create(
             new CreateFileData(
@@ -84,21 +86,15 @@ class UploadFileAction
             $filesize,
         );
 
-        $this->sendFileToHosting($fileId, $hostings, $encodedFile);
+        $this->sendFileToHosting($hostings, $fileId, $encodedFile);
 
         return $fileUuid;
-    }
-
-    private function generateFilename(string $fileUuid): string
-    {
-        $date = (new DateTime('now'))->format('Y-m-d_H-i-s');
-
-        return sprintf('upload_%s_%s.%s', $date, $fileUuid, 'zip');
     }
 
     /**
      * @param UploadedFileInterface[] $uploadedFiles
      * @param string[] $hostings
+     *
      * @return string[]
      */
     private function sendIndividually(array $uploadedFiles, array $hostings): array
@@ -128,7 +124,7 @@ class UploadFileAction
                 $uploadedFile->getSize(),
             );
 
-            $this->sendFileToHosting($fileId, $hostings, $encodedFile);
+            $this->sendFileToHosting($hostings, $fileId, $encodedFile);
         }
 
         return $filesUuid;
@@ -137,11 +133,11 @@ class UploadFileAction
     /**
      * @param HostingData[] $hostings
      */
-    private function sendFileToHosting(int $fileId, array $hostings, EncodedFileData $encodedFile): void
+    private function sendFileToHosting(array $hostings, int $fileId, EncodedFileData $encodedFile): void
     {
         foreach ($hostings as $hosting) {
             $fileHostingId = $this->fileHostingRepository->create(
-                new CreateHostedFileData(
+                new CreateFileHostingData(
                     $fileId,
                     $hosting->id,
                 )
@@ -160,45 +156,22 @@ class UploadFileAction
     }
 
     /**
-     * @param UploadedFileInterface[] $uploadedFiles
-     * @throws InvalidFileException
-     */
-    private function validateUploadedFile(array $uploadedFiles): void
-    {
-        array_walk($uploadedFiles, function (UploadedFileInterface $uploadedFile): void {
-            $filename = $uploadedFile->getClientFilename();
-
-            if (UPLOAD_ERR_OK !== $uploadedFile->getError()) {
-                throw InvalidFileException::fromErrorCode($uploadedFile->getError(), $filename);
-            }
-
-            if (! $uploadedFile->getSize()) {
-                throw new InvalidFileException(sprintf('Invalid file content, filename: %s', $filename));
-            }
-
-            $maxFileSize = 5 * 1024 * 1024; // 5MB
-            if ($uploadedFile->getSize() > $maxFileSize) {
-                throw new InvalidFileException(sprintf('File size is too large, filename: %s', $filename));
-            }
-
-            if (! in_array($uploadedFile->getClientMediaType(), self::ALLOWED_MIME_TYPES)) {
-                throw new InvalidFileException(sprintf('Invalid file type, filename: %s', $filename));
-            }
-        });
-    }
-
-    /**
      * @param string[] $hostingSlugInPayload
      * @throws HostingNotFoundException
+     *
      * @return HostingData[]
      */
     private function queryHostingByIds(array $hostingSlugInPayload): array
     {
         $hostings = $this->hostingRepository->queryBySlugs($hostingSlugInPayload);
-        $hostingsFound = array_column($hostings, 'slug');
 
-        if ($hostingsNotFound = array_diff($hostingSlugInPayload, $hostingsFound)) {
-            throw HostingNotFoundException::fromHostingNotFound($hostingsNotFound);
+        if (count($hostings) !== count($hostingSlugInPayload)) {
+            $hostingsFound = array_column($hostings, 'slug');
+            $hostingsNotFound = array_diff($hostingSlugInPayload, $hostingsFound);
+
+            throw new HostingNotFoundException(
+                implode(', ', $hostingsNotFound)
+            );
         }
 
         return $hostings;

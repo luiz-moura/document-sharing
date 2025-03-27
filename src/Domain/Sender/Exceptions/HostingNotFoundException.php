@@ -9,18 +9,13 @@ use Fig\Http\Message\StatusCodeInterface as StatusCode;
 
 class HostingNotFoundException extends Exception
 {
-    public function __construct(string $message = 'Hosting not found.')
+    public const int CODE = StatusCode::STATUS_UNPROCESSABLE_ENTITY;
+
+    public function __construct(string|int $hosting)
     {
         parent::__construct(
-            $message,
-            code: StatusCode::STATUS_BAD_REQUEST
+            sprintf('Hosting not found: %s.', $hosting),
+            self::CODE
         );
-    }
-
-    public static function fromHostingNotFound(array $hostings): self
-    {
-        $message = sprintf('Hosting not found: %s', implode(', ', $hostings));
-
-        return new self($message);
     }
 }

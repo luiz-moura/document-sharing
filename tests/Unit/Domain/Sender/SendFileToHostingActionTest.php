@@ -5,24 +5,23 @@ declare(strict_types=1);
 namespace Tests\Unit\Sender;
 
 use App\Domain\Sender\Actions\SendFileToHostingAction;
-use App\Domain\Sender\Contracts\HostedFileRepository;
+use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileSenderFactory;
 use App\Domain\Sender\Contracts\FileSenderService;
-use App\Domain\Sender\DTOs\UpdateAccessLinkHostedFileData;
-use App\Domain\Sender\Enums\FileStatusOnHostEnum;
-use App\Domain\Sender\Exceptions\FailedToUploadFileToHostingException;
+use App\Domain\Sender\Enums\FileHostingStatus;
+use App\Domain\Sender\Exceptions\FailedToSendFileException;
 use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
-use Tests\Utils\Mocks\Sender\HostedFileDataFactory;
+use Tests\Utils\Mocks\Sender\FileHostingDataFactory;
 use Tests\Utils\Mocks\Sender\SendFileToHostingDataFactory;
 
 class SendFileToHostingActionTest extends TestCase
 {
     private MockObject|FileSenderFactory $fileSenderFactory;
     private MockObject|FileSenderService $fileSenderService;
-    private MockObject|HostedFileRepository $fileHostingRepository;
+    private MockObject|FileHostingRepository $fileHostingRepository;
     private MockObject|LoggerInterface $logger;
     private SendFileToHostingAction $sut;
 
@@ -32,7 +31,7 @@ class SendFileToHostingActionTest extends TestCase
 
         $this->fileSenderFactory = $this->createMock(FileSenderFactory::class);
         $this->fileSenderService = $this->createMock(FileSenderService::class);
-        $this->fileHostingRepository = $this->createMock(HostedFileRepository::class);
+        $this->fileHostingRepository = $this->createMock(FileHostingRepository::class);
         $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->sut = new SendFileToHostingAction(
@@ -46,17 +45,12 @@ class SendFileToHostingActionTest extends TestCase
     {
         $sendFileToHosting = SendFileToHostingDataFactory::create();
 
-        $hostedFile = HostedFileDataFactory::create();
-        $updateAccessLinkHostedFile = new UpdateAccessLinkHostedFileData(
-            externalId: $hostedFile->fileId,
-            webViewLink: $hostedFile->webViewLink,
-            webContentLink: $hostedFile->webContentLink,
-        );
+        $fileHosting = FileHostingDataFactory::create();
 
         $this->fileHostingRepository
             ->expects($this->once())
             ->method('updateStatus')
-            ->with($sendFileToHosting->hostedFileId, FileStatusOnHostEnum::PROCESSING);
+            ->with($sendFileToHosting->fileHostingId, FileHostingStatus::PROCESSING);
 
         $this->fileSenderFactory
             ->expects($this->once())
@@ -68,15 +62,7 @@ class SendFileToHostingActionTest extends TestCase
             ->expects($this->once())
             ->method('send')
             ->with($sendFileToHosting->encodedFile)
-            ->willReturn($hostedFile);
-
-        $this->fileHostingRepository
-            ->expects($this->once())
-            ->method('updateAccessLink')
-            ->with(
-                $sendFileToHosting->hostedFileId,
-                $updateAccessLinkHostedFile
-            );
+            ->willReturn($fileHosting);
 
         $this->sut->__invoke($sendFileToHosting);
     }
@@ -89,10 +75,10 @@ class SendFileToHostingActionTest extends TestCase
             ->expects($this->exactly(2))
             ->method('updateStatus')
             ->with(
-                $sendFileToHosting->hostedFileId,
+                $sendFileToHosting->fileHostingId,
                 $this->logicalOr(
-                    FileStatusOnHostEnum::PROCESSING,
-                    FileStatusOnHostEnum::SEND_FAILURE
+                    FileHostingStatus::PROCESSING,
+                    FileHostingStatus::SEND_FAILURE
                 )
             );
 
@@ -110,7 +96,7 @@ class SendFileToHostingActionTest extends TestCase
 
         $this->logger->expects($this->once())->method('error');
 
-        $this->expectException(FailedToUploadFileToHostingException::class);
+        $this->expectException(FailedToSendFileException::class);
         $this->expectExceptionMessage('Failed to upload file to hosting.');
 
         $this->sut->__invoke($sendFileToHosting);

@@ -34,17 +34,4 @@ class FileHostingRepository extends EntityRepository implements FileHostingRepos
         $this->getEntityManager()->persist($fileHostingEntity);
         $this->getEntityManager()->flush();
     }
-
-    public function updateAccessLink(int $fileHostingId, UpdateAccessLinkFileHostingData $fileHosting): void
-    {
-        $fileHostingEntity = $this->find($fileHostingId);
-
-        $fileHostingEntity->setStatus($fileHosting->status)
-            ->setWebContentLink($fileHosting->webContentLink)
-            ->setWebViewLink($fileHosting->webViewLink)
-            ->setExternalFileId($fileHosting->externalId);
-
-        $this->getEntityManager()->persist($fileHostingEntity);
-        $this->getEntityManager()->flush();
-    }
 }
