@@ -59,17 +59,9 @@ class FileHostingEntity
     public function __construct(
         int $fileId,
         int $hostingId,
-        ?string $status = null,
-        ?string $externalFileId = null,
-        ?string $webViewLink = null,
-        ?string $webContentLink = null,
     ) {
         $this->fileId = $fileId;
         $this->hostingId = $hostingId;
-        $this->status = $status;
-        $this->externalFileId = $externalFileId;
-        $this->webViewLink = $webViewLink;
-        $this->webContentLink = $webContentLink;
     }
 
     public function getId(): int

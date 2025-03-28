@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\InMemory;
 
 use App\Domain\Sender\Contracts\HostingRepository as HostingRepositoryContract;
-use App\Domain\Sender\DTOs\HostingEntity as DomainHostingEntity;
+use App\Domain\Sender\Entities\HostingEntity as DomainHostingEntity;
 
 class HostingRepository implements HostingRepositoryContract
 {

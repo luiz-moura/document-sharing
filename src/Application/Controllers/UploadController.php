@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Application\Controllers;
 
-use App\Domain\Sender\Actions\UploadFileUseCase;
+use App\Domain\Sender\UseCases\UploadFileUseCase;
 use App\Domain\Sender\DTOs\UploadFileData;
 use App\Domain\Sender\Enums\FileHostingStatus;
 use Fig\Http\Message\StatusCodeInterface as StatusCode;
@@ -45,6 +45,8 @@ class UploadController
 
     private function validateRequest(Request $request): void
     {
+        // TODO: change status code to 422
+
         $parsedBody = $request->getParsedBody();
 
         if (! isset($parsedBody['hosting_slugs']) || ! is_array($parsedBody['hosting_slugs'])) {

@@ -8,14 +8,14 @@ use App\Domain\Common\Services\Uuid\Contracts\UuidGeneratorService;
 use App\Domain\Common\Queue\JobDispatcher;
 use App\Domain\Common\Services\ZipArchive\ZipArchiveService;
 use App\Domain\Sender\Actions\GenerateFilenameAction;
-use App\Domain\Sender\Actions\UploadFileUseCase;
+use App\Domain\Sender\UseCases\UploadFileUseCase;
 use App\Domain\Sender\Actions\ValidateUploadedFileAction;
 use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\CreateFileHostingData;
 use App\Domain\Sender\DTOs\EncodedFileData;
-use App\Domain\Sender\DTOs\HostingEntity;
+use App\Domain\Sender\Entities\HostingEntity;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\DTOs\UploadFileData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
@@ -26,6 +26,7 @@ use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\StreamInterface;
 use Psr\Http\Message\UploadedFileInterface;
+use Psr\Log\LoggerInterface;
 use Tests\Utils\Mocks\Sender\CreateFileDataFactory;
 use Tests\Utils\Mocks\Sender\UploadedFileFactory;
 
@@ -43,6 +44,7 @@ class UploadFileActionTest extends TestCase
     private MockObject|ZipArchiveService $zipArchiveService;
     private MockObject|SendFileToHostingJob $sendFileToHostingJob;
     private MockObject|JobDispatcher $jobDispatcher;
+    private MockObject|LoggerInterface $logger;
     private UploadFileUseCase $sut;
 
     protected function setUp(): void
@@ -60,6 +62,7 @@ class UploadFileActionTest extends TestCase
         $this->zipArchiveService = $this->createMock(ZipArchiveService::class);
         $this->sendFileToHostingJob = $this->createMock(SendFileToHostingJob::class);
         $this->jobDispatcher = $this->createMock(JobDispatcher::class);
+        $this->logger = $this->createMock(LoggerInterface::class);
 
         $this->sut = new UploadFileUseCase(
             $this->validateUploadedFileAction,
@@ -71,6 +74,7 @@ class UploadFileActionTest extends TestCase
             $this->zipArchiveService,
             $this->sendFileToHostingJob,
             $this->jobDispatcher,
+            $this->logger,
         );
     }
 

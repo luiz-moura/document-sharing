@@ -2,18 +2,20 @@
 
 declare(strict_types=1);
 
-namespace App\Domain\Sender\Actions;
+namespace App\Domain\Sender\UseCases;
 
 use App\Domain\Common\Services\Uuid\Contracts\UuidGeneratorService;
 use App\Domain\Common\Queue\JobDispatcher;
 use App\Domain\Common\Services\ZipArchive\ZipArchiveService;
+use App\Domain\Sender\Actions\GenerateFilenameAction;
+use App\Domain\Sender\Actions\ValidateUploadedFileAction;
 use App\Domain\Sender\Contracts\FileHostingRepository;
 use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\CreateFileData;
 use App\Domain\Sender\DTOs\CreateFileHostingData;
 use App\Domain\Sender\DTOs\EncodedFileData;
-use App\Domain\Sender\DTOs\HostingEntity;
+use App\Domain\Sender\Entities\HostingEntity;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\DTOs\UploadFileData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;

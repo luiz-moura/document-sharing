@@ -13,7 +13,7 @@ use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\CreateFileHostingData;
 use App\Domain\Sender\DTOs\EncodedFileData;
-use App\Domain\Sender\DTOs\HostingEntity;
+use App\Domain\Sender\Entities\HostingEntity;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\Jobs\SendFileToHostingJob;
 use DI\Container;
