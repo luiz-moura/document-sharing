@@ -2,10 +2,11 @@
 
 namespace App\Domain\Common\Queue;
 
+use App\Domain\Common\Queue\Contracts\Dispatchable;
 use App\Domain\Common\Queue\Contracts\Job;
 use App\Domain\Common\Queue\Contracts\Publisher;
 
-class JobDispatcher
+class JobDispatcher implements Dispatchable
 {
     public function __construct(
         private readonly Publisher $publisher
