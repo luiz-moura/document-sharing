@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\InMemory;
 
 use App\Domain\Sender\Contracts\HostingRepository as HostingRepositoryContract;
-use App\Domain\Sender\DTOs\HostingData;
+use App\Domain\Sender\DTOs\HostingEntity as DomainHostingEntity;
 
 class HostingRepository implements HostingRepositoryContract
 {
@@ -14,7 +14,7 @@ class HostingRepository implements HostingRepositoryContract
         $i = 1;
 
         return array_map(
-            fn (string $slug): HostingData => new HostingData(
+            fn (string $slug): DomainHostingEntity => new DomainHostingEntity(
                 id: $i++,
                 slug: $slug,
                 name: 'in Memory',
@@ -25,9 +25,9 @@ class HostingRepository implements HostingRepositoryContract
         );
     }
 
-    public function findBySlug(string $slug): ?HostingData
+    public function findBySlug(string $slug): ?DomainHostingEntity
     {
-        return new HostingData(
+        return new DomainHostingEntity(
             id: 1,
             slug: $slug,
             name: 'in Memory',

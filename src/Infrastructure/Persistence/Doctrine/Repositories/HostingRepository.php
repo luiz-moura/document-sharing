@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Infrastructure\Persistence\Doctrine\Repositories;
 
 use App\Domain\Sender\Contracts\HostingRepository as HostingRepositoryContract;
-use App\Domain\Sender\DTOs\HostingData;
+use App\Domain\Sender\DTOs\HostingEntity as DomainHostingEntity;
 use App\Infrastructure\Persistence\Doctrine\Entities\HostingEntity;
 use Doctrine\ORM\EntityRepository;
 use RuntimeException;
@@ -21,7 +21,7 @@ class HostingRepository extends EntityRepository implements HostingRepositoryCon
             ->getResult();
 
         return array_map(
-            fn (HostingEntity $hosting): HostingData => new HostingData(
+            fn (HostingEntity $hosting): DomainHostingEntity => new DomainHostingEntity(
                 $hosting->getId(),
                 $hosting->getSlug(),
                 $hosting->getName(),
@@ -32,7 +32,7 @@ class HostingRepository extends EntityRepository implements HostingRepositoryCon
         );
     }
 
-    public function findBySlug(string $slug): ?HostingData
+    public function findBySlug(string $slug): ?DomainHostingEntity
     {
         /** @var ?HostingEntity $entity */
         $entity = $this->findOneBy(['slug' => $slug]);
@@ -41,7 +41,7 @@ class HostingRepository extends EntityRepository implements HostingRepositoryCon
             return null;
         }
 
-        return new HostingData(
+        return new DomainHostingEntity(
             $entity->getId(),
             $entity->getSlug(),
             $entity->getName(),

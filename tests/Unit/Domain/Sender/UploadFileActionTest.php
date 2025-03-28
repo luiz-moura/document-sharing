@@ -15,7 +15,7 @@ use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\CreateFileHostingData;
 use App\Domain\Sender\DTOs\EncodedFileData;
-use App\Domain\Sender\DTOs\HostingData;
+use App\Domain\Sender\DTOs\HostingEntity;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\DTOs\UploadFileData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
@@ -377,8 +377,8 @@ class UploadFileActionTest extends TestCase
         ]);
 
         $fileId = $this->faker->randomDigitNotZero();
-        $googleDriveHosting = new HostingData(1, 'google-drive', 'Google Drive', null, null);
-        $dropboxHosting = new HostingData(2, 'Dropbox', 'dropbox', null, null);
+        $googleDriveHosting = new HostingEntity(1, 'google-drive', 'Google Drive', null, null);
+        $dropboxHosting = new HostingEntity(2, 'Dropbox', 'dropbox', null, null);
         $hostingSlugs = [$googleDriveHosting->slug, $dropboxHosting->slug];
         $fileHostingIds = [$this->faker->randomDigitNotZero(), $this->faker->randomDigitNotZero()];
 

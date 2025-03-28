@@ -13,7 +13,7 @@ use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\CreateFileData;
 use App\Domain\Sender\DTOs\CreateFileHostingData;
 use App\Domain\Sender\DTOs\EncodedFileData;
-use App\Domain\Sender\DTOs\HostingData;
+use App\Domain\Sender\DTOs\HostingEntity;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\DTOs\UploadFileData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
@@ -131,7 +131,7 @@ class UploadFileUseCase
     }
 
     /**
-     * @param HostingData[] $hostings
+     * @param HostingEntity[] $hostings
      */
     private function sendFileToHosting(array $hostings, int $fileId, EncodedFileData $encodedFile): void
     {
@@ -159,7 +159,7 @@ class UploadFileUseCase
      * @param string[] $hostingSlugInPayload
      * @throws HostingNotFoundException
      *
-     * @return HostingData[]
+     * @return HostingEntity[]
      */
     private function queryHostingByIds(array $hostingSlugInPayload): array
     {

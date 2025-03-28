@@ -13,7 +13,7 @@ use App\Domain\Sender\Contracts\FileRepository;
 use App\Domain\Sender\Contracts\HostingRepository;
 use App\Domain\Sender\DTOs\CreateFileHostingData;
 use App\Domain\Sender\DTOs\EncodedFileData;
-use App\Domain\Sender\DTOs\HostingData;
+use App\Domain\Sender\DTOs\HostingEntity;
 use App\Domain\Sender\DTOs\SendFileToHostingData;
 use App\Domain\Sender\Jobs\SendFileToHostingJob;
 use DI\Container;
@@ -197,7 +197,7 @@ class UploadFileTest extends TestCase
 
         $fileId = $this->faker->randomDigitNotZero();
         $hostingSlugs = ['google-drive'];
-        $googleDriveHosting = new HostingData($this->faker->randomDigitNotZero(), $hostingSlugs[0], 'Google Drive', null, null);
+        $googleDriveHosting = new HostingEntity($this->faker->randomDigitNotZero(), $hostingSlugs[0], 'Google Drive', null, null);
         $fileHostingId = $this->faker->randomDigitNotZero();
 
         $this->hostingRepositoryProphecy
