@@ -19,6 +19,7 @@ use App\Domain\Sender\DTOs\UploadFileData;
 use App\Domain\Sender\Exceptions\HostingNotFoundException;
 use App\Domain\Sender\Jobs\SendFileToHostingJob;
 use Psr\Http\Message\UploadedFileInterface;
+use Psr\Log\LoggerInterface;
 
 class UploadFileUseCase
 {
@@ -36,6 +37,7 @@ class UploadFileUseCase
         private readonly ZipArchiveService $zipArchiveService,
         private readonly SendFileToHostingJob $sendFileToHostingJob,
         private readonly JobDispatcher $jobDispatcher,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -44,6 +46,18 @@ class UploadFileUseCase
      */
     public function __invoke(UploadFileData $uploadFileData): array
     {
+        $this->logger->info(
+            sprintf('[%s] Uploading file', __METHOD__),
+            [
+                'hosting_slugs' => $uploadFileData->hostingSlugs,
+                'should_zip' => $uploadFileData->shouldZip,
+                'filenames' => array_map(
+                    fn (UploadedFileInterface $uploadedFile): ?string => $uploadedFile->getClientFilename(),
+                    $uploadFileData->uploadedFiles
+                ),
+            ]
+        );
+
         foreach ($uploadFileData->uploadedFiles as $uploadedFile) {
             ($this->validateUploadedFileAction)($uploadedFile);
         }
@@ -66,6 +80,14 @@ class UploadFileUseCase
         $fileUuid = $this->uuidGeneratorService->generateUuid();
         $filename = ($this->generateFilenameAction)($fileUuid, self::APPLICATION_ZIP_EXTENSION);
 
+        $this->logger->info(
+            sprintf('[%s] Zipping files', __METHOD__),
+            [
+                'file_uuid' => $fileUuid,
+                'filename' => $filename,
+            ]
+        );
+
         $binary = $this->zipArchiveService->zipArchive($uploadedFiles);
         $filesize = strlen($binary);
         $mimeType = self::APPLICATION_ZIP_MIME_TYPE;
@@ -86,6 +108,15 @@ class UploadFileUseCase
             $filesize,
         );
 
+        $this->logger->info(
+            sprintf('[%s] Sending zipped archive', __METHOD__),
+            [
+                'file_uuid' => $fileUuid,
+                'filename' => $filename,
+                'filesize' => $filesize,
+            ]
+        );
+
         $this->sendFileToHosting($hostings, $fileId, $encodedFile);
 
         return $fileUuid;
@@ -99,6 +130,17 @@ class UploadFileUseCase
      */
     private function sendIndividually(array $uploadedFiles, array $hostings): array
     {
+        $this->logger->info(
+            sprintf('[%s] Sending files individually', __METHOD__),
+            [
+                'hostings' => array_column($hostings, 'slug'),
+                'filenames' => array_map(
+                    fn (UploadedFileInterface $uploadedFile): ?string => $uploadedFile->getClientFilename(),
+                    $uploadedFiles
+                ),
+            ]
+        );
+
         $filesUuid = [];
 
         foreach ($uploadedFiles as $uploadedFile) {
@@ -126,6 +168,14 @@ class UploadFileUseCase
 
             $this->sendFileToHosting($hostings, $fileId, $encodedFile);
         }
+
+        $this->logger->info(
+            sprintf('[%s] Files sent individually', __METHOD__),
+            [
+                'hostings' => array_column($hostings, 'slug'),
+                'files_uuid' => $filesUuid,
+            ]
+        );
 
         return $filesUuid;
     }

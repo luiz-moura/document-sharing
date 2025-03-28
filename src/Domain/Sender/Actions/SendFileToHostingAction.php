@@ -25,6 +25,14 @@ class SendFileToHostingAction
      */
     public function __invoke(SendFileToHostingData $sendFileToHosting): void
     {
+        $this->logger->info(
+            sprintf('[%s] Sending file to hosting', __METHOD__),
+            [
+                'hosting_slug' => $sendFileToHosting->hostingSlug,
+                'hosted_file_id' => $sendFileToHosting->fileHostingId,
+            ]
+        );
+
         $this->fileHostingRepository->updateStatus(
             $sendFileToHosting->fileHostingId,
             FileHostingStatus::PROCESSING
@@ -34,14 +42,26 @@ class SendFileToHostingAction
             $sendFileToHosting->hostingSlug
         );
 
+        $this->logger->info(
+            sprintf('[%s] File sender service class', __METHOD__),
+            [
+                'hosting_slug' => $sendFileToHosting->hostingSlug,
+                'hosted_file_id' => $sendFileToHosting->fileHostingId,
+                'file_sender_service_class' => $sendFileToHosting->hostingSlug,
+            ]
+        );
+
         try {
             $fileOnHosting = $fileSenderService->send($sendFileToHosting->encodedFile);
         } catch (FailedToSendFileException $exception) {
-            $this->logger->error(sprintf('[%s] Failed to send file to service', __METHOD__), [
-                'hosting_slug' => $sendFileToHosting->hostingSlug,
-                'hosted_file_id' => $sendFileToHosting->fileHostingId,
-                'exception' => $exception,
-            ]);
+            $this->logger->error(
+                sprintf('[%s] Failed to send file', __METHOD__),
+                [
+                    'hosting_slug' => $sendFileToHosting->hostingSlug,
+                    'hosted_file_id' => $sendFileToHosting->fileHostingId,
+                    'exception' => $exception,
+                ]
+            );
 
             $this->fileHostingRepository->updateStatus(
                 $sendFileToHosting->fileHostingId,
@@ -54,6 +74,14 @@ class SendFileToHostingAction
         $this->fileHostingRepository->updateStatus(
             $sendFileToHosting->fileHostingId,
             FileHostingStatus::SEND_SUCCESS
+        );
+
+        $this->logger->info(
+            sprintf('[%s] File sent to hosting', __METHOD__),
+            [
+                'hosting_slug' => $sendFileToHosting->hostingSlug,
+                'hosted_file_id' => $sendFileToHosting->fileHostingId,
+            ]
         );
     }
 }

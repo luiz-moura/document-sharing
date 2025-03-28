@@ -23,13 +23,13 @@ class UploadController
     {
         $this->validateRequest($request);
 
-        $uploadRequest = new UploadFileData(
+        $uploadFile = new UploadFileData(
             hostingSlugs: $request->getParsedBody()['hosting_slugs'],
             uploadedFiles: $request->getUploadedFiles()['files'],
             shouldZip: filter_var($request->getParsedBody()['should_zip'] ?? false, FILTER_VALIDATE_BOOLEAN),
         );
 
-        $fileUuid = ($this->uploadFileUseCase)($uploadRequest);
+        $fileUuid = ($this->uploadFileUseCase)($uploadFile);
 
         $response->getBody()->write(
             json_encode([
